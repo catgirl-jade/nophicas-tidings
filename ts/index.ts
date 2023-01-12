@@ -41,8 +41,6 @@ const worker = function() {
   if (window.Worker) {
     return new Worker(new URL('./worker.ts', import.meta.url));
   } else {
-    // Call init, because we will have to init here instead of the worker
-    nophicas_tidings.init();
     return null;
   }
 }();

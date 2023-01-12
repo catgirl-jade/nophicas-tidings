@@ -15,12 +15,14 @@ use crate::player::Player;
 use fraction::Fraction as Frac;
 use wasm_bindgen::prelude::*;
 
-#[wasm_bindgen]
-pub fn init() {
+#[wasm_bindgen(start)]
+pub fn start() -> Result<(), JsValue> {
     #[cfg(feature = "console_panic")]
     {
-        std::panic::set_hook(Box::new(console_error_panic_hook::hook));
+        console_error_panic_hook::set_once();
     }
+    tracing_wasm::set_as_global_default();
+    Ok(())
 }
 
 #[wasm_bindgen]
@@ -32,7 +34,7 @@ pub fn generate_rotation(
     item_gather_amount: u8,
     boon_chance: u8,
     bountiful_bonus: u8,
-) -> JsValue {
+) -> Result<JsValue, JsValue> {
     // Initialize player settings
     let player = Player {
         level,
@@ -54,5 +56,6 @@ pub fn generate_rotation(
     };
     let state = player.gather(&node, &params);
     let rotation = state.best_rotation();
-    serde_wasm_bindgen::to_value(&rotation).unwrap()
+    let out = serde_wasm_bindgen::to_value(&rotation)?;
+    Ok(out)
 }

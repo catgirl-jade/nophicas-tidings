@@ -12,8 +12,6 @@
 import { WorkerData } from "./common.js";
 import * as nophicas_tidings from "../pkg";
 
-// Perform initialization on the panic hook
-nophicas_tidings.init();
 // TODO: Port this fully to rust
 console.log("Worker initialized");
 

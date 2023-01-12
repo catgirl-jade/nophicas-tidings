@@ -370,7 +370,7 @@ impl Serialize for Rotation {
     {
         use serde::ser::SerializeStruct;
         // Serialize as a map
-        let mut obj = serializer.serialize_struct("Rotation", 2)?;
+        let mut obj = serializer.serialize_struct("", 2)?;
         // Convert items using our preferred format
         let amount_str = frac_to_string(self.items);
         obj.serialize_field("items", &amount_str)?;
@@ -428,18 +428,18 @@ impl Serialize for GatherAction {
         use serde::ser::SerializeStruct;
         // Start the map, gathers get an extra field
         let mut obj = serializer.serialize_struct(
-            "GatherAction",
+            "",
             if matches!(self, GatherAction::Gather { .. }) {
-                3
+                4
             } else {
-                2
+                3
             },
         )?;
         // Action ids
         obj.serialize_field("id_min", &self.btn_icon())?;
         obj.serialize_field("id_btn", &self.min_icon())?;
         // Spell name to make things easier
-        obj.serialize_field("name", self.to_string().as_str())?;
+        obj.serialize_field("name", &self.to_string())?;
         // Extra field
         if let GatherAction::Gather { amount } = self {
             let amount_str = frac_to_string(*amount);

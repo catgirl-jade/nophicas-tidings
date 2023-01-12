@@ -167,6 +167,7 @@ async function display_result(result: any) {
     // The number of items gathered
     const div_items = document.createElement("div");
     div_items.classList.add("col-sm-1");
+    div_items.classList.add("align-items-center");
     div_items.classList.add("action-quantity");
     if (action.action.hasOwnProperty("amount")) {
       div_items.innerText = `${action.action.amount}`
@@ -301,9 +302,9 @@ async function update_item_stats(ev: Event | null) {
     // Request info from xivapi 
     let resp = await fetch(`${XIVAPI_BASE}/ItemLevel/${item_level}`);
     let body = await resp.json();
-    let gathering = body.Gathering;
-    let perception = body.Perception;
-    cached = `${body.Gathering}/${body.Perception}`;
+    item_gathering = body.Gathering;
+    item_perception = body.Perception;
+    cached = `${item_gathering}/${item_perception}`;
     localStorage.setItem(key, cached);
   }
   cached = cached!;

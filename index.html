@@ -45,15 +45,13 @@
         <h3>Item</h3>
         <label for="item_level">Item Level: </label>
         <input id="item_level" type="number" value=590 min=0 size=4 title="Item level of the item"/><br>
-        <div id="item_gathering" class="calculated_stat" style="display: none;">
-          <span>Base gathering: </span>
-          <span id="item_gathering_value"></span>
-        </div><br>
-        <div id="item_perception" class="calculated_stat" style="display: none;">
-          <span>Base perception: </span>
-          <span id="item_perception_value"></span>
-        </div><br>
-        <label for="item_success_chance">Gather chance</label>
+        <div id="item_gathering" class="calculated_stat">
+          <span>Base gathering: </span><span id="item_gathering_value"></span>
+        </div>
+        <div id="item_perception" class="calculated_stat"> 
+          <span>Base perception: </span><span id="item_perception_value"></span>
+        </div>
+        <label id="label_success_chance" for="item_success_chance">Gather chance</label>
         <input id="item_success_chance" type="number" value=100 min=0 size=4 title="Chance of gathering the item"/>
         <label for="item_success_chance">%</label><br>
         <label for="item_gather_amount">Base gather</label>
@@ -67,6 +65,9 @@
         <label for="item_bountiful_bonus">items</label><br>
         <input id="submit" type="submit" value="Simulate" />
       </form>
+      <div>
+      </div>
+      <div class="align-bottom">Read the <a href="https://github.com/catgirl-jade/nophicas-tidings/blob/main/README.md">README</a> for updates and basic info on how to use this tool</div>
       <div class="align-bottom">Report any issues to <a href="https://github.com/catgirl-jade/nophicas-tidings">the github</a> or to rikyua#0413</div>
       <div class="align-bottom">FINAL FANTASY XIV © 2010 - 2023 SQUARE ENIX CO., LTD. All Rights Reserved.</div>
     </div>

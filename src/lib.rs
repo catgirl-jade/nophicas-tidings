@@ -72,3 +72,7 @@ pub fn boon_chance(player_perception: u32, item_perception: u32) -> u32 {
         0..=59 => 0,
     }
 }
+#[wasm_bindgen]
+pub fn success_chance(player_perception: u32, item_perception: u32) -> u32 {
+    0
+}

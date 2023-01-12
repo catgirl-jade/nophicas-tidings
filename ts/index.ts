@@ -30,9 +30,10 @@ const div_item_gathering = <HTMLElement> document.getElementById("item_gathering
 const span_item_gathering_value = <HTMLElement> document.getElementById("item_gathering_value")!;
 const div_item_perception = <HTMLElement> document.getElementById("item_perception")!;
 const span_item_perception_value = <HTMLElement> document.getElementById("item_perception_value")!;
+const label_success_chance = <HTMLElement> document.getElementById("label_success_chance")!;
 const input_item_success_chance = <HTMLInputElement> document.getElementById("item_success_chance")!;
 const input_item_gather_amount = <HTMLInputElement> document.getElementById("item_gather_amount")!;
-const label_boon_chance = <HTMLInputElement> document.getElementById("label_boon_chance")!;
+const label_boon_chance = <HTMLElement> document.getElementById("label_boon_chance")!;
 const input_item_boon_chance = <HTMLInputElement> document.getElementById("item_boon_chance")!;
 const input_item_bountiful_bonus = <HTMLInputElement> document.getElementById("item_bountiful_bonus")!;
 const input_submit = <HTMLInputElement> document.getElementById("submit")!;
@@ -327,11 +328,30 @@ input_item_level.onchange = async function (ev: Event) {
 }
 // Set up the values with initial data
 await update_item_stats(null);
-div_item_gathering.style.display = "inline";
-div_item_perception.style.display = "inline";
 
 
+// Updates success based on dependent variables
+function update_success_rate(ev: Event | null) {
+  // Save gathering while we're here
+  let player_gathering = parseInt(input_player_gathering.value);
+  localStorage.setItem("gathering", player_gathering.toString());
+  if (player_gathering == 0 || item_gathering == 0) {
+    return false;
+  }
+  let success_rate = nophicas_tidings.success_chance(player_gathering, item_gathering);
+  // TODO: unremove once we have the algo right
+  //input_item_success_chance.value = success_rate.toString();
+  //label_success_chance.classList.remove("unvalidated");
+  //label_success_chance.classList.add("validated");
+}
+update_success_rate(null);
+// Both player gathering and item level affect success rate
+input_player_gathering.onchange = update_success_rate;
+input_item_level.addEventListener("change", update_success_rate);
+
+// Updates boon based on dependent variables
 function update_boon_rate(ev: Event | null) {
+  // Save perception while we're here
   let player_perception = parseInt(input_player_perception.value);
   if (player_perception == 0 || item_perception == 0) {
     return false;
@@ -341,9 +361,10 @@ function update_boon_rate(ev: Event | null) {
   label_boon_chance.classList.remove("unvalidated");
   label_boon_chance.classList.add("validated");
 }
+update_boon_rate(null);
 // Both player perception and item level affect boon rate
 input_player_perception.onchange = update_boon_rate;
-input_item_level.onchange = update_boon_rate;
+input_item_level.addEventListener("change", update_boon_rate);
 // Manuallly changing boon choice diverges from calculated values
 input_item_boon_chance.onchange = (ev) => {
   label_boon_chance.classList.add("unvalidated");

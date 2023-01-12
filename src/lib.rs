@@ -67,14 +67,11 @@ pub fn boon_chance(player_perception: u32, item_perception: u32) -> u32 {
     println!("{}", &player_perception);
     println!("{}", &item_perception);
     println!("{}", &boon_score);
-    fn boon_rate(boon_score: u32) -> u32 {
-        match boon_score {
-            100.. => (boon_score - 100) / 2 + 35,
-            80..=99 => (boon_score - 80) + 15,
-            70..=79 => (boon_score - 70) / 2 + 10,
-            60..=69 => boon_score - 60,
-            0..=59 => 0,
-        }
+    match boon_score {
+        100.. => (boon_score - 100) / 2 + 35,
+        80..=99 => (boon_score - 80) + 15,
+        70..=79 => (boon_score - 70) / 2 + 10,
+        60..=69 => boon_score - 60,
+        0..=59 => 0,
     }
-    boon_rate(boon_score)
 }

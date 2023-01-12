@@ -64,9 +64,6 @@ pub fn generate_rotation(
 #[wasm_bindgen]
 pub fn boon_chance(player_perception: u32, item_perception: u32) -> u32 {
     let boon_score = ((100 * player_perception) / item_perception).min(150);
-    println!("{}", &player_perception);
-    println!("{}", &item_perception);
-    println!("{}", &boon_score);
     match boon_score {
         100.. => (boon_score - 100) / 2 + 35,
         80..=99 => (boon_score - 80) + 15,

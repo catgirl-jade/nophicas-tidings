@@ -14,9 +14,8 @@ crate-type = ["cdylib", "rlib"]
 
 [features]
 development = ["console_panic"]
-production = ["wee_alloc", "console_panic"]
+production = ["console_panic"]
 console_panic = ["dep:console_error_panic_hook"]
-wee_alloc = ["dep:wee_alloc"]
 
 [dependencies]
 console_error_panic_hook = { version = "0.1.7", optional = true }
@@ -27,12 +26,12 @@ serde-wasm-bindgen = "0.4.5"
 thiserror = "1.0.38"
 tracing = "0.1.37"
 wasm-bindgen = "0.2.83"
-wee_alloc = { version = "0.4.5", optional = true }
 
 [dev-dependencies]
 wasm-bindgen-test = "0.3.33"
 
 [profile.release]
+lto = true
 # Keep debug symbols
-# debug = true
+debug = true
 # opt-level = "s"

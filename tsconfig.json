@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    "outDir": "./built",
+    "allowJs": true,
+    "target": "es2020",
+    "module": "es2020",
+    "moduleResolution": "nodenext",
+    "strict": true
+  },
+  "include": ["./ts/**/*"]
+}

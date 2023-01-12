@@ -35,7 +35,8 @@ module.exports = {
   // Build output name 
   output: {
     filename: "index.js",
-    path: path.resolve(__dirname, "docs")
+    path: path.resolve(__dirname, "docs"),
+    clean: true
   },
   module: {
     rules: [

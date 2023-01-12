@@ -63,7 +63,7 @@ pub struct GatherState {
     /// Bonus from blessed/kings
     blessed_king_bonus: u8,
     /// Whether sharp vision/field mastery was used
-    sharp_vision_field_mastery_used: bool,
+    sharp_vision_field_mastery_used: [bool; 3],
     /// Whether gift 1 and 2 were used
     gift_used: [bool; 2],
     /// Whether tidings was used
@@ -93,7 +93,7 @@ impl GatherState {
             remaining_attempts: node.max_attempts,
             node: node.clone(),
             blessed_king_bonus: 0,
-            sharp_vision_field_mastery_used: false,
+            sharp_vision_field_mastery_used: [false; 3],
             gift_used: [false; 2],
             tidings: false,
             bountiful_chance: Frac::from(0),
@@ -256,9 +256,13 @@ impl GatherState {
         if self.success_chance == Frac::from(1) {
             return Err(GatherError::SVFMWasted);
         }
-        //TODO: check if SVFM stacks
-        if self.sharp_vision_field_mastery_used {
-            return Err(GatherError::SVFMAlreadyUsed);
+        let idx = match rank {
+            SVFMRank::I => 0,
+            SVFMRank::II => 1,
+            SVFMRank::III => 2,
+        };
+        if self.sharp_vision_field_mastery_used[idx] {
+            return Err(GatherError::SVFMAlreadyUsed(*rank));
         }
         if self.success_chance == Frac::from(0) {
             return Err(GatherError::SVFMUsedAtZero);
@@ -271,7 +275,7 @@ impl GatherState {
         // Cap the chance at 100%
         self.success_chance = (self.success_chance + rank.gather_chance_bonus()).min(Frac::from(1));
         // Mark it used
-        self.sharp_vision_field_mastery_used = true;
+        self.sharp_vision_field_mastery_used[idx] = true;
         Ok(())
     }
     /// rank=false for gift 0, rank=true for gift 1
@@ -683,8 +687,8 @@ enum GatherError {
     DurabilityOvercapped,
     #[error("Sharp Vision/Field Mastery used at 100% or when a lower rank would have sufficed")]
     SVFMWasted,
-    #[error("Sharp Vision/Field Mastery used when it has already been applied")]
-    SVFMAlreadyUsed,
+    #[error("Sharp Vision/Field Mastery {0} used when it has already been applied")]
+    SVFMAlreadyUsed(SVFMRank),
     #[error("Sharp Vision/Field Mastery used when chance is zero, does nothing")]
     SVFMUsedAtZero,
 }

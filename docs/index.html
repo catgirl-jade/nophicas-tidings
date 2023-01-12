@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<!--
+  Copyright 2023 catgirl-jade
+  
+  This file is part of nophicas-tidings.
+
+  nophicas-tidings is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+
+  nophicas-tidings is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License along with nophicas-tidings. If not, see <https://www.gnu.org/licenses/>.
+-->
+<html lang="en">
+<head>
+  <title>Nophica's Tidings</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</head>
+<body>
+
+<div class="container-fluid p-2 bg-primary text-white text-center">
+  <h1>Nophica's Tidings</h1>
+</div>
+  
+<div class="container mt-4">
+  <div class="row">
+    <div class="col-sm-3">
+      <form id="parameters">
+        <h3>Player</h3>
+        <label for="player_level">Level</label>
+        <input id="player_level" type="number" value=90 min=1 max=90 title="Your character's MIN/BTN level"/><br>
+        <label for="player_gp">GP</label>
+        <input id="player_gp" type="number" value=900 min=0 title="Your maximum GP, or how much GP you have going into the node"/>
+        <h3>Node</h3>
+        <label for="node_durability">Durability</label>
+        <input id="node_durability" type="number" value=4 min=0 title="How many times you can hit the node before it disappears"/>
+        <label for="node_durability">whacks</label><br>
+        <h3>Item</h3>
+        <label for="item_success_chance">Gather chance</label>
+        <input id="item_success_chance" type="number" value=100 min=0 title="Chance of gathering the item"/>
+        <label for="item_success_chance">%</label><br>
+        <label for="item_gather_amount">Base gather</label>
+        <input id="item_gather_amount" type="number" value=1 min=0 title="Amount of items you gather per whack by default"/>
+        <label for="item_gather_amount">items</label><br>
+        <label for="item_boon_chance">Boon chance</label>
+        <input id="item_boon_chance" type="number" value=100 min=0 title="Chance of triggering gatherer's boon"/>
+        <label for="item_boon_chance">%</label><br>
+        <label for="item_bountiful_bonus">Bountiful bonus</label>
+        <input id="item_bountiful_bonus" type="number" value=2 min=0 title="How many items you get for using Bountiful II" />
+        <label for="item_bountiful_bonus">items</label><br>
+        <input id="submit" type="submit" value="Simulate" />
+      </form>
+      <span class="align-bottom">FINAL FANTASY XIV © 2010 - 2023 SQUARE ENIX CO., LTD. All Rights Reserved.</span>
+    </div>
+    <div id="result_rotation" class="col">
+      <div id="calc_message" class="row" style="display: none;">
+        <h3 style="text-align: center;">Performing simulations, please wait...</h3>
+      </div>
+      <div id="result_items_outer" style="display: none;" class="row">
+        <span class="average-label">Average items: </span> <span id="result_items"></span> 
+      </div>
+      <div class="row result-header">
+        <div class="col-sm-1">Items</div>
+        <div class="col">Ability</div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Load the script now that all the elements are declared -->
+<script src="./index.js"></script>
+</body>
+</html>

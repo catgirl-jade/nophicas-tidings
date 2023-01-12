@@ -22,9 +22,17 @@ const XIVAPI_BASE: string = "https://xivapi.com";
 const form_params: HTMLElement = document.getElementById("parameters")!;
 const input_player_level = <HTMLInputElement> document.getElementById("player_level")!;
 const input_player_gp = <HTMLInputElement> document.getElementById("player_gp")!;
+const input_player_gathering = <HTMLInputElement> document.getElementById("player_gathering")!;
+const input_player_perception = <HTMLInputElement> document.getElementById("player_perception")!;
 const input_node_durability = <HTMLInputElement> document.getElementById("node_durability")!;
+const input_item_level = <HTMLInputElement> document.getElementById("item_level")!;
+const div_item_gathering = <HTMLElement> document.getElementById("item_gathering")!;
+const span_item_gathering_value = <HTMLElement> document.getElementById("item_gathering_value")!;
+const div_item_perception = <HTMLElement> document.getElementById("item_perception")!;
+const span_item_perception_value = <HTMLElement> document.getElementById("item_perception_value")!;
 const input_item_success_chance = <HTMLInputElement> document.getElementById("item_success_chance")!;
 const input_item_gather_amount = <HTMLInputElement> document.getElementById("item_gather_amount")!;
+const label_boon_chance = <HTMLInputElement> document.getElementById("label_boon_chance")!;
 const input_item_boon_chance = <HTMLInputElement> document.getElementById("item_boon_chance")!;
 const input_item_bountiful_bonus = <HTMLInputElement> document.getElementById("item_bountiful_bonus")!;
 const input_submit = <HTMLInputElement> document.getElementById("submit")!;
@@ -35,6 +43,10 @@ const div_result: HTMLElement = document.getElementById("result_rotation")!;
 const div_result_items_outer: HTMLElement = div_result.querySelector("#result_items_outer")!;
 // Action number of items written here
 const span_result_items: HTMLElement = div_result_items_outer.querySelector("#result_items")!;
+
+// Globals storing calculated item gathering/perception
+let item_gathering = 0;
+let item_perception = 0;
 
 /// Global reference to the web worker
 const worker = function() {
@@ -267,3 +279,66 @@ form_params.onsubmit = async function(ev) {
   await start_calculations();
   return false;
 }
+// When item level is changed, the required crafting/gathering will be updated
+function make_ilvl_key(ilvl: number): string {
+  return `ilvl/${ilvl}`;
+}
+async function update_item_stats(ev: Event | null) {
+  let item_level = parseInt(input_item_level.value);
+  let key = make_ilvl_key(item_level);
+  let cached = localStorage.getItem(key);
+  // Set the class to its clear the value is out of sync
+  div_item_gathering.classList.remove("calculated_stat");
+  div_item_perception.classList.remove("calculated_stat");
+  div_item_gathering.classList.add("calculating_stat");
+  div_item_perception.classList.add("calculating_stat");
+  span_item_gathering_value.innerText = "...";
+  span_item_perception_value.innerText = "...";
+  if (!Boolean(cached)) {
+    // Request info from xivapi 
+    let resp = await fetch(`${XIVAPI_BASE}/ItemLevel/${item_level}`);
+    let body = await resp.json();
+    let gathering = body.Gathering;
+    let perception = body.Perception;
+    cached = `${body.Gathering}/${body.Perception}`;
+    localStorage.setItem(key, cached);
+  }
+  cached = cached!;
+  let data = cached.split("/");
+  item_gathering = parseInt(data[0]);
+  span_item_gathering_value.innerText = item_gathering.toString();
+  item_perception = parseInt(data[1]);
+  span_item_perception_value.innerText = item_perception.toString();
+  // Fix the classes
+  div_item_gathering.classList.add("calculated_stat");
+  div_item_perception.classList.add("calculated_stat");
+  div_item_gathering.classList.remove("calculating_stat");
+  div_item_perception.classList.remove("calculating_stat");
+  // Since we're recalculating item stats, re-call the percent calculators
+  update_boon_rate(null);
+}
+input_item_level.onchange = async function (ev: Event) { 
+  update_item_stats(ev);
+  return false;
+}
+// Set up the values with initial data
+await update_item_stats(null);
+div_item_gathering.style.display = "inline";
+div_item_perception.style.display = "inline";
+
+
+function update_boon_rate(ev: Event | null) {
+  let player_perception = parseInt(input_player_perception.value);
+  if (player_perception == 0 || item_perception == 0) {
+    return false;
+  }
+  let boon_rate = nophicas_tidings.boon_chance(player_perception, item_perception);
+  input_item_boon_chance.value = boon_rate.toString();
+  label_boon_chance.classList.remove("unvalidated");
+  label_boon_chance.classList.add("validated");
+}
+input_player_perception.onchange = update_boon_rate;
+input_item_boon_chance.onchange = (ev) => {
+  label_boon_chance.classList.add("unvalidated");
+  label_boon_chance.classList.remove("validated");
+};

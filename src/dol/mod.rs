@@ -13,7 +13,6 @@ use crate::player::Player;
 use fraction::Fraction as Frac;
 use lazy_static::lazy_static;
 use serde::Serialize;
-use std::borrow::Cow;
 use std::fmt;
 
 #[derive(Clone, Debug, PartialEq)]

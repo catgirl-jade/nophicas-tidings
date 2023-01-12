@@ -3,7 +3,7 @@
     "outDir": "./built",
     "allowJs": true,
     "target": "es2020",
-    "module": "es2020",
+    "module": "es2022",
     "moduleResolution": "nodenext",
     "strict": true
   },

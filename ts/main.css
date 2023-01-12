@@ -8,6 +8,18 @@
  
    You should have received a copy of the GNU General Public License along with Foobar. If not, see <https:  www.gnu.org licenses >.
 */
+div.calculated_stat {
+  background-color: #00BB00;
+}
+div.calculating_stat {
+  background-color: #BB0000;
+}
+label.validated {
+  background-color: #00BB00;
+}
+label.unvalidated {
+  background-color: #BB0000;
+}
 span.average-label {
   font-weight: bold;
 }

@@ -13,7 +13,6 @@ pub mod player;
 use crate::dol::{Item, Node};
 use crate::player::Player;
 use fraction::Fraction as Frac;
-use tracing::{error, info};
 use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen(start)]
@@ -62,19 +61,16 @@ pub fn generate_rotation(
 }
 
 #[wasm_bindgen]
-pub fn boon_chance(player_perception: u32, item_perception: u32) -> u32 {
-    let boon_score = ((100 * player_perception) / item_perception).min(150);
-    println!("{}", &player_perception);
-    println!("{}", &item_perception);
-    println!("{}", &boon_score);
-    fn boon_rate(boon_score: u32) -> u32 {
+pub fn boon_chance(player_perception: u16, item_perception: u16) -> u16 {
+    let boon_score = (100 * player_perception / item_perception).min(150);
+    fn boon_rate(boon_score: u16) -> u16 {
         match boon_score {
-            100.. => (boon_score - 100) / 2 + 35,
-            80..=99 => (boon_score - 80) + 15,
-            70..=79 => (boon_score - 70) / 2 + 10,
-            60..=69 => boon_score - 60,
+            100.. => boon_rate(boon_score - 100) / 2 + 35,
+            80..=99 => boon_rate(boon_score - 80) + 15,
+            70..=79 => boon_rate(boon_score - 70) / 2 + 10,
+            60..=69 => boon_rate(boon_score - 60),
             0..=59 => 0,
         }
     }
-    boon_rate(boon_score)
+    return boon_rate(boon_score);
 }

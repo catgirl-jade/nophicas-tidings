@@ -38,7 +38,7 @@ module.exports = {
     path: path.resolve(__dirname, "docs")
   },
   module: {
-  rules: [
+    rules: [
       // CSS
       {
         test: /\.css$/i,
@@ -74,6 +74,7 @@ module.exports = {
   // For webassemply support 
   experiments: {
     asyncWebAssembly: true,
+    topLevelAwait: true,
   },
 };
 

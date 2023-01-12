@@ -13,7 +13,7 @@ const WasmPackPlugin = require("@wasm-tool/wasm-pack-plugin");
 const path = require('path');
 
 // Default to production mode
-const MODE: string = "development";
+const MODE: string = "production";
 
 // Rust settings depend on production/development
 const RUST_FLAGS = function(): string {
@@ -77,7 +77,6 @@ module.exports = {
   },
 };
 
-//if (MODE === "development") {
-if (true) {
+if (MODE === "development") {
   module.exports.devtool = "source-map";
 }

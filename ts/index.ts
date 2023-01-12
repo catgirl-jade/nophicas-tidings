@@ -213,7 +213,10 @@ function set_form_disabled(value: boolean) {
   input_submit.disabled = value;
   input_player_level.disabled = value;
   input_player_gp.disabled = value;
+  input_player_gathering.disabled = value;
+  input_player_perception.disabled = value;
   input_node_durability.disabled = value;
+  input_item_level.disabled = value;
   input_item_success_chance.disabled = value;
   input_item_gather_amount.disabled = value;
   input_item_boon_chance.disabled = value;
@@ -337,7 +340,10 @@ function update_boon_rate(ev: Event | null) {
   label_boon_chance.classList.remove("unvalidated");
   label_boon_chance.classList.add("validated");
 }
+// Both player perception and item level affect boon rate
 input_player_perception.onchange = update_boon_rate;
+input_item_level.onchange = update_boon_rate;
+// Manuallly changing boon choice diverges from calculated values
 input_item_boon_chance.onchange = (ev) => {
   label_boon_chance.classList.add("unvalidated");
   label_boon_chance.classList.remove("validated");

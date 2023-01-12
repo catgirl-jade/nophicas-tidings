@@ -98,7 +98,6 @@ async function do_calculations(
 }
 
 async function display_result(result: any) {
-  console.log(result);
   // Hide the calculation message
   div_calc_message.style.display = "none";
   // Report the resulting rotation
@@ -151,7 +150,6 @@ async function display_result(result: any) {
   // Store a mapping of img element -> icon so we know where to set them
   // Create a div for each element of the rotation
   for (let action of result.actions) {
-    console.log(action);
     // Div storing all the info for an action stage
     const div_action = document.createElement("div");
     div_action.classList.add("row");
@@ -267,7 +265,6 @@ async function start_calculations() {
 
 // On submission, the form will perform calculation 
 form_params.onsubmit = async function(ev) {
-  console.log("called");
   ev.preventDefault();
   await start_calculations();
   return false;

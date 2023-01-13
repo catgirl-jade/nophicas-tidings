@@ -10,17 +10,18 @@
 
 /// Imports
 import { WorkerData } from "./common";
-import { find_icons, get_item_base_scores, get_icon_url } from "./xivapi";
+import { find_icons, get_item_base_scores, get_icon_url, search_gatherable } from "./xivapi";
+import { Modal } from "bootstrap";
+
+// Bootstrap scss + others 
+import '../scss/styles.scss'
 
 //TODO: check if importing wasm module incurs double-overhead
 import * as nophicas_tidings from "../pkg";
-// CSS??
-import "./main.css";
-import { createDecipher } from "crypto";
 
 /// Globals referencing HTML fields
 /// The whole form
-const form_params: HTMLElement = document.getElementById("parameters")!;
+const form_params = <HTMLFormElement> document.getElementById("parameters")!;
 // Player stats
 /// Level
 const input_player_level = <HTMLInputElement> document.getElementById("player_level")!;
@@ -38,11 +39,11 @@ const input_node_durability = <HTMLInputElement> document.getElementById("node_d
 const input_item_level = <HTMLInputElement> document.getElementById("item_level")!;
 // Calculated from item level
 /// Gathering base score
-const div_item_gathering = <HTMLElement> document.getElementById("item_gathering")!;
-const span_item_gathering_value = <HTMLElement> document.getElementById("item_gathering_value")!;
+const div_item_gathering = <HTMLDivElement> document.getElementById("item_gathering")!;
+const span_item_gathering_value = <HTMLSpanElement> document.getElementById("item_gathering_value")!;
 /// Perception base score
-const div_item_perception = <HTMLElement> document.getElementById("item_perception")!;
-const span_item_perception_value = <HTMLElement> document.getElementById("item_perception_value")!;
+const div_item_perception = <HTMLDivElement> document.getElementById("item_perception")!;
+const span_item_perception_value = <HTMLSpanElement> document.getElementById("item_perception_value")!;
 /// Chance to successfully gather
 const label_success_chance = <HTMLLabelElement> document.getElementById("label_success_chance")!;
 const input_item_success_chance = <HTMLInputElement> document.getElementById("item_success_chance")!;
@@ -56,17 +57,20 @@ const label_bountiful_bonus = <HTMLLabelElement> document.getElementById("label_
 const input_item_bountiful_bonus = <HTMLInputElement> document.getElementById("item_bountiful_bonus")!;
 /// Button to perform simulation
 const input_submit = <HTMLInputElement> document.getElementById("submit")!;
-const div_calc_message: HTMLElement = document.getElementById("calc_message")!;
+const div_calc_message = <HTMLDivElement> document.getElementById("calc_message")!;
 /// Stores result of calculation
-const div_result: HTMLElement = document.getElementById("result_rotation")!;
+const div_result = <HTMLDivElement> document.getElementById("result_rotation")!;
 /// Wrapper div for number of items
-const div_result_items_outer: HTMLElement = div_result.querySelector("#result_items_outer")!;
+const div_result_items_outer: HTMLDivElement = div_result.querySelector("#result_items_outer")!;
 /// Produced number of items written here
-const span_result_items: HTMLElement = div_result_items_outer.querySelector("#result_items")!;
+const span_result_items: HTMLSpanElement = div_result_items_outer.querySelector("#result_items")!;
 // Search modal and related elements
 const button_search_modal = <HTMLButtonElement> document.getElementById("button_search_modal")!;
+const div_search_modal = <HTMLDivElement> document.getElementById("search_modal");
+const form_search = <HTMLFormElement> document.getElementById("form_search")!;
 const input_search = <HTMLInputElement> document.getElementById("input_search")!;
 const button_search_execute = <HTMLButtonElement> document.getElementById("button_search_execute")!;
+const div_search_results = <HTMLDivElement> document.getElementById("div_search_results");
 
 // Keys used to store player stats in localStorage
 const LEVEL_KEY: string = "level"; 
@@ -373,6 +377,11 @@ function create_invalidate_callback(label: HTMLLabelElement) {
 input_item_boon_chance.onchange = create_invalidate_callback(label_boon_chance);
 input_item_bountiful_bonus.onchange = create_invalidate_callback(label_bountiful_bonus);
 
+// Stop default behavior of the form
+form_search.onsubmit = async function(ev) {
+  ev.preventDefault();
+  return false;
+}
 // Add search functionality
 button_search_modal.onclick = async function(event: MouseEvent) {
   // Reset the search box
@@ -382,8 +391,55 @@ button_search_modal.onclick = async function(event: MouseEvent) {
 button_search_execute.onclick = async function(event: MouseEvent) {
   // Disable default behavior
   event.preventDefault();
-  // Get the text of the search phrase
-  let search_phrase = input_search.value;
+  // Clear out the existing results
+  div_search_results.querySelectorAll("div.search-row").forEach(row => {
+    row.parentNode!.removeChild(row)
+  });
+  // Perform the search
+  let results = await search_gatherable(input_search.value);
+  // Visualize the results
+  for (let result of results) {
+    // The row
+    const div_result = document.createElement("div");
+    div_result.classList.add("row");
+    div_result.classList.add("search-row");
+    div_result.addEventListener("click", click_search_result);
+    // The icon
+    const div_icon = document.createElement("div");
+    div_icon.classList.add("col-sm-auto");
+    const img_icon = document.createElement("img");
+    div_icon.appendChild(img_icon);
+    img_icon.src = result.icon;
+    div_result.appendChild(div_icon);
+    // The ilvl component
+    const div_ilvl = document.createElement("div");
+    div_ilvl.classList.add("col-sm-auto");
+    div_ilvl.classList.add("search-ilvl");
+    div_ilvl.innerText = result.item_level.toString();
+    div_result.appendChild(div_ilvl);
+    // The name
+    const div_name = document.createElement("div");
+    div_name.classList.add("col-sm-auto");
+    div_name.innerText = result.name;
+    div_result.appendChild(div_name);
+    // Finally. append the div to the list
+    div_search_results.appendChild(div_result);
+  }
   // Perform a search
   return false; 
+}
+
+async function click_search_result(event: Event) {
+  // Find the item level
+  let row = <HTMLDivElement> event.currentTarget!;
+  let div_ilvl = <HTMLDivElement> row.querySelector(".search-ilvl");
+  let item_level = parseInt(div_ilvl.innerText);
+  // Hide the modal
+  let modal = Modal.getInstance(div_search_modal)!;
+  await modal.hide();
+  // Pass the value to the item level selector
+  input_item_level.value = item_level.toString();
+  await update_from_item_level(null);
+  // Close the modal
+  return false;
 }

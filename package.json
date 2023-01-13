@@ -22,8 +22,12 @@
     "@types/node": "^18.11.18",
     "@types/webpack": "^5.28.0",
     "@wasm-tool/wasm-pack-plugin": "^1.6.0",
+    "autoprefixer": "^10.4.13",
     "copy-webpack-plugin": "^11.0.0",
     "css-loader": "^6.7.3",
+    "postcss-loader": "^7.0.2",
+    "sass": "^1.57.1",
+    "sass-loader": "^13.2.0",
     "source-map-loader": "^4.0.1",
     "style-loader": "^3.3.1",
     "ts-loader": "^9.4.2",
@@ -32,5 +36,10 @@
     "webpack": "^5.75.0",
     "webpack-cli": "^5.0.1",
     "webpack-dev-server": "^4.11.1"
+  },
+  "dependencies": {
+    "@popperjs/core": "^2.11.6",
+    "@types/bootstrap": "^5.2.6",
+    "bootstrap": "^5.2.3"
   }
 }

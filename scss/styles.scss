@@ -8,6 +8,10 @@
  
    You should have received a copy of the GNU General Public License along with Foobar. If not, see <https:  www.gnu.org licenses >.
 */
+
+// Import all of Bootstrap's CSS
+@import "~bootstrap/scss/bootstrap";
+
 div.validated, label.validated {
   background-color: #00BB00;
 }
@@ -35,4 +39,16 @@ div.action-row > div.action-icons > img {
 }
 div.action-row > div.action-name {
   text-align: left;
+}
+
+div.search-row:hover {
+  outline-style: solid;
+  outline-color: #00FF0088;
+}
+div.search-ilvl {
+  font-weight: bold;
+}
+div.search-row > img {
+  width: 32px;
+  height: 32px;
 }

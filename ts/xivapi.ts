@@ -72,9 +72,55 @@ export async function get_item_base_scores(item_level: number): Promise<BaseScor
 
 export interface GatherableItem {
   name: string,
-  item_level: number
+  item_level: number,
+  icon: string
+}
+export interface SearchResult {
+  Name: string,
+  LevelItem: number,
+  Icon: string,
 }
 /// Searches for gatherable items
 export async function search_gatherable(query: string): Promise<Array<GatherableItem>> {
-  return new Array();
+  let resp = await fetch("https://xivapi.com/search", {
+      "method": "POST",
+      "body":
+      JSON.stringify({
+        indexes: "Item,GatheringItem",
+        columns: "Name,LevelItem,Icon",
+        body: {
+          query: {
+            bool: {
+              must: [
+                {
+                  wildcard: {
+                    NameCombined_en: `*${query}*`
+                  }
+                }
+              ],
+              filter: [
+                {
+                  exists: {
+                    field: "GameContentLinks.GatheringItem"
+                  }
+                },
+                {
+                  term: {
+                    IsCollectable: 0 
+                  }
+                }
+              ]
+            }
+          },
+          from: 0,
+          size: 100
+        }
+      })
+  });
+  let body = await resp.json();
+  return body.Results.map((result: SearchResult) => <GatherableItem>({
+    name: result.Name,
+    item_level: result.LevelItem,
+    icon: `${XIVAPI_BASE}${result.Icon}`
+  }));
 }

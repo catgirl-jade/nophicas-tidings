@@ -7,13 +7,9 @@
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.flake-utils.follows = "flake-utils";
     };
-    naersk = {
-      url = "github:nix-community/naersk";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
   };
 
-  outputs = { self, nixpkgs, flake-utils, rust-overlay, naersk }:
+  outputs = { self, nixpkgs, flake-utils, rust-overlay }:
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = (import nixpkgs) {
@@ -25,19 +21,10 @@
         rust_minimal = rust_toolchain.minimal.override {
           targets = rust_targets;
         };
-        naersk' = pkgs.callPackage naersk {
-          rustc = rust_minimal;
-          cargo = rust_minimal;
-        };
         nativeBuildInputs = [ pkgs.pkg-config pkgs.wasm-pack pkgs.nodePackages.npm pkgs.nodejs ];
         buildInputs = [ pkgs.openssl pkgs.binaryen ];
       in
       rec {
-        defaultPackage = naersk'.buildPackage {
-          inherit nativeBuildInputs buildInputs;
-          src = ./.;
-        };
-
         devShell = pkgs.mkShell {
           inherit buildInputs;
           nativeBuildInputs = nativeBuildInputs ++ [

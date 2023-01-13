@@ -9,45 +9,66 @@
 // You should have received a copy of the GNU General Public License along with nophicas-tidings. If not, see <https://www.gnu.org/licenses/>.
 
 /// Imports
-import { WorkerData } from "./common.js";
+import { WorkerData } from "./common";
+import { find_icons, get_item_base_scores, get_icon_url } from "./xivapi";
+
 //TODO: check if importing wasm module incurs double-overhead
 import * as nophicas_tidings from "../pkg";
 // CSS??
 import "./main.css";
-
-/// API URL for xivapi
-const XIVAPI_BASE: string = "https://xivapi.com";
+import { createDecipher } from "crypto";
 
 /// Globals referencing HTML fields
+/// The whole form
 const form_params: HTMLElement = document.getElementById("parameters")!;
+// Player stats
+/// Level
 const input_player_level = <HTMLInputElement> document.getElementById("player_level")!;
+/// GP 
 const input_player_gp = <HTMLInputElement> document.getElementById("player_gp")!;
+/// Gathering 
 const input_player_gathering = <HTMLInputElement> document.getElementById("player_gathering")!;
+/// Perception
 const input_player_perception = <HTMLInputElement> document.getElementById("player_perception")!;
+// Node stats
+/// Durability 
 const input_node_durability = <HTMLInputElement> document.getElementById("node_durability")!;
+// Item stats
+// Item level
 const input_item_level = <HTMLInputElement> document.getElementById("item_level")!;
+// Calculated from item level
+/// Gathering base score
 const div_item_gathering = <HTMLElement> document.getElementById("item_gathering")!;
 const span_item_gathering_value = <HTMLElement> document.getElementById("item_gathering_value")!;
+/// Perception base score
 const div_item_perception = <HTMLElement> document.getElementById("item_perception")!;
 const span_item_perception_value = <HTMLElement> document.getElementById("item_perception_value")!;
-const label_success_chance = <HTMLElement> document.getElementById("label_success_chance")!;
+/// Chance to successfully gather
+const label_success_chance = <HTMLLabelElement> document.getElementById("label_success_chance")!;
 const input_item_success_chance = <HTMLInputElement> document.getElementById("item_success_chance")!;
+/// Base amount
 const input_item_gather_amount = <HTMLInputElement> document.getElementById("item_gather_amount")!;
-const label_boon_chance = <HTMLElement> document.getElementById("label_boon_chance")!;
+/// Chance to trigger gatherers boon
+const label_boon_chance = <HTMLLabelElement> document.getElementById("label_boon_chance")!;
 const input_item_boon_chance = <HTMLInputElement> document.getElementById("item_boon_chance")!;
+/// Amount granted by bountiful yield
+const label_bountiful_bonus = <HTMLLabelElement> document.getElementById("label_bountiful_bonus")!;
 const input_item_bountiful_bonus = <HTMLInputElement> document.getElementById("item_bountiful_bonus")!;
+/// Button to perform simulation
 const input_submit = <HTMLInputElement> document.getElementById("submit")!;
 const div_calc_message: HTMLElement = document.getElementById("calc_message")!;
-// Stores result of calculation
+/// Stores result of calculation
 const div_result: HTMLElement = document.getElementById("result_rotation")!;
-// Wrapper div for number of items
+/// Wrapper div for number of items
 const div_result_items_outer: HTMLElement = div_result.querySelector("#result_items_outer")!;
-// Action number of items written here
+/// Produced number of items written here
 const span_result_items: HTMLElement = div_result_items_outer.querySelector("#result_items")!;
 
-// Globals storing calculated item gathering/perception
-let item_gathering = 0;
-let item_perception = 0;
+// Keys used to store player stats in localStorage
+const LEVEL_KEY: string = "level"; 
+const GP_KEY: string = "gp"; 
+const GATHERING_KEY: string = "gathering";
+const PERCEPTION_KEY: string = "perception";
 
 /// Global reference to the web worker
 const worker = function() {
@@ -58,34 +79,20 @@ const worker = function() {
   }
 }();
 
-// Quick helper function to reduce duplication
-function make_icon_key(t: string, id: number): string {
-  return `icon/${t}/${id}`;
-}
-
-/// Checks local cache for image urls before hitting XIVAPI
-async function get_icons(ty: string, ids: Iterable<number>) {
-  let unknown_ids = new Array<number>();
-  for (let id of ids) {
-    let key = make_icon_key(ty, id); 
-    let path = localStorage.getItem(key);
-    if (!path) {
-      unknown_ids.push(id);
-    }
+// On page load, we can check localStorage and load the player's saved stats
+function load_and_set_save_callback(input: HTMLInputElement, key: string) {
+  let saved_value = localStorage.getItem(key);
+  if (saved_value) {
+    input.value = saved_value;
   }
-  let id_string = unknown_ids.map((id) => id.toString()).join(",");
-  if (unknown_ids.length > 0) {
-    // Batch all the unknown ids into a single request
-    let resp = await fetch(`${XIVAPI_BASE}/${ty}?` + new URLSearchParams({ids: id_string}));
-    let body = await resp.json();
-    // Cache all the newly requested ids
-    for (let result of body.Results) {
-      let key = make_icon_key(ty, result.ID);
-      localStorage.setItem(key, result.Icon);
-    }
-  }
+  input.addEventListener("change", (ev: Event) => {
+    localStorage.setItem(key, input.value);
+  });
 }
-
+load_and_set_save_callback(input_player_level, "level");
+load_and_set_save_callback(input_player_gp, "gp");
+load_and_set_save_callback(input_player_gathering, "gathering");
+load_and_set_save_callback(input_player_perception, "perception");
 
 /// Wrapper function to perform the calculation
 async function do_calculations(
@@ -147,10 +154,8 @@ async function display_result(result: any) {
     type: string
   ) {
     for (let [id, imgs] of icons) {
-      let key = make_icon_key(type, id);
-      let path = localStorage.getItem(key);
-      if (path) {
-        let url = `${XIVAPI_BASE}${path}`;
+      let url = get_icon_url(type, id); 
+      if (url) {
         for (let img of imgs) {
           img.src = url;
         }
@@ -199,8 +204,8 @@ async function display_result(result: any) {
     update_icon_lists(icon_btn.type, icon_btn.id, img_btn); 
   }
   // Finally, we want to request icons
-  get_icons("item", item_icons.keys()); 
-  get_icons("action", action_icons.keys());
+  find_icons("item", item_icons.keys()); 
+  find_icons("action", action_icons.keys());
   // Render the icons
   render_icons(item_icons, "item");
   render_icons(action_icons, "action");
@@ -284,89 +289,82 @@ form_params.onsubmit = async function(ev) {
   await start_calculations();
   return false;
 }
-// When item level is changed, the required crafting/gathering will be updated
-function make_ilvl_key(ilvl: number): string {
-  return `ilvl/${ilvl}`;
-}
 async function update_item_stats(ev: Event | null) {
   let item_level = parseInt(input_item_level.value);
-  let key = make_ilvl_key(item_level);
-  let cached = localStorage.getItem(key);
-  // Set the class to its clear the value is out of sync
-  div_item_gathering.classList.remove("calculated_stat");
-  div_item_perception.classList.remove("calculated_stat");
-  div_item_gathering.classList.add("calculating_stat");
-  div_item_perception.classList.add("calculating_stat");
+  // Mark the valids invalid until we have new values
+  mark_validity(div_item_gathering, false);
+  mark_validity(div_item_perception, false);
   span_item_gathering_value.innerText = "...";
   span_item_perception_value.innerText = "...";
-  if (!Boolean(cached)) {
-    // Request info from xivapi 
-    let resp = await fetch(`${XIVAPI_BASE}/ItemLevel/${item_level}`);
-    let body = await resp.json();
-    item_gathering = body.Gathering;
-    item_perception = body.Perception;
-    cached = `${item_gathering}/${item_perception}`;
-    localStorage.setItem(key, cached);
-  }
-  cached = cached!;
-  let data = cached.split("/");
-  item_gathering = parseInt(data[0]);
-  span_item_gathering_value.innerText = item_gathering.toString();
-  item_perception = parseInt(data[1]);
-  span_item_perception_value.innerText = item_perception.toString();
-  // Fix the classes
-  div_item_gathering.classList.add("calculated_stat");
-  div_item_perception.classList.add("calculated_stat");
-  div_item_gathering.classList.remove("calculating_stat");
-  div_item_perception.classList.remove("calculating_stat");
-  // Since we're recalculating item stats, re-call the percent calculators
-  update_boon_rate(null);
-}
-input_item_level.onchange = async function (ev: Event) { 
-  update_item_stats(ev);
+  // Request the new stats
+  let new_stats = await get_item_base_scores(item_level);
+  span_item_gathering_value.innerText = new_stats.gathering.toString();
+  span_item_perception_value.innerText = new_stats.perception.toString();
+  // Mark the stats as valid again
+  mark_validity(div_item_gathering, true);
+  mark_validity(div_item_perception, true);
+  // Since we're recalculating item stats, update the dependent variables
+  update_from_gathering(null);
+  update_from_perception(null);
   return false;
 }
-// Set up the values with initial data
+// Set the callback
+input_item_level.onchange = update_item_stats;
+// Call it once for the first time so we have initial values
 await update_item_stats(null);
 
-
-// Updates success based on dependent variables
-function update_success_rate(ev: Event | null) {
-  // Save gathering while we're here
+// Updates variables that are based on player gathering score
+function update_from_gathering(ev: Event | null) {
+  // Read both gathering scores
   let player_gathering = parseInt(input_player_gathering.value);
-  localStorage.setItem("gathering", player_gathering.toString());
-  if (player_gathering == 0 || item_gathering == 0) {
-    return false;
-  }
+  let item_gathering = parseInt(span_item_gathering_value.innerText);
+  // Calculate success rate and bountiful bonus
   let success_rate = nophicas_tidings.success_chance(player_gathering, item_gathering);
+  let bountiful_bonus = nophicas_tidings.bountiful_amount(player_gathering, item_gathering);
   // TODO: unremove once we have the algo right
-  //input_item_success_chance.value = success_rate.toString();
-  //label_success_chance.classList.remove("unvalidated");
-  //label_success_chance.classList.add("validated");
+  // input_item_success_chance.value = success_rate.toString();
+  // mark_validity(label_success_chance, true);
+  input_item_bountiful_bonus.value = bountiful_bonus.toString();
+  mark_validity(label_bountiful_bonus, true);
 }
-update_success_rate(null);
-// Both player gathering and item level affect success rate
-input_player_gathering.onchange = update_success_rate;
-input_item_level.addEventListener("change", update_success_rate);
+// Set the callback
+input_player_gathering.addEventListener("change", update_from_gathering);
+// Call it once
+update_from_gathering(null);
 
-// Updates boon based on dependent variables
-function update_boon_rate(ev: Event | null) {
-  // Save perception while we're here
+// Updates variables based on gathering scores
+function update_from_perception(ev: Event | null) {
+  // Read both perception scores
   let player_perception = parseInt(input_player_perception.value);
-  if (player_perception == 0 || item_perception == 0) {
-    return false;
-  }
+  let item_perception = parseInt(span_item_perception_value.innerText);
+  // Calculate boon rate
   let boon_rate = nophicas_tidings.boon_chance(player_perception, item_perception);
+  // Save boon rate and mark it valid
   input_item_boon_chance.value = boon_rate.toString();
-  label_boon_chance.classList.remove("unvalidated");
-  label_boon_chance.classList.add("validated");
+  mark_validity(label_boon_chance, true);
 }
-update_boon_rate(null);
-// Both player perception and item level affect boon rate
-input_player_perception.onchange = update_boon_rate;
-input_item_level.addEventListener("change", update_boon_rate);
-// Manuallly changing boon choice diverges from calculated values
-input_item_boon_chance.onchange = (ev) => {
-  label_boon_chance.classList.add("unvalidated");
-  label_boon_chance.classList.remove("validated");
-};
+// Set the callback
+input_player_perception.addEventListener("change", update_from_perception);
+// Call it once
+update_from_perception(null);
+
+// Marks a label/div as validated or invalidated
+function mark_validity(label: HTMLLabelElement | HTMLElement, validity: boolean) {
+  if (validity) {
+    label.classList.add("validated");
+    label.classList.remove("unvalidated");
+  }
+  else {
+    label.classList.add("unvalidated");
+    label.classList.remove("validated");
+  }
+}
+
+/// This function creates a callback which invalidates a label when a calculated value is modified manually
+function create_invalidate_callback(label: HTMLLabelElement) {
+  return function(ev: Event) {
+    mark_validity(label, false);
+  }
+} 
+input_item_boon_chance.onchange = create_invalidate_callback(label_boon_chance);
+input_item_bountiful_bonus.onchange = create_invalidate_callback(label_bountiful_bonus);

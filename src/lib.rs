@@ -76,3 +76,16 @@ pub fn boon_chance(player_perception: u32, item_perception: u32) -> u32 {
 pub fn success_chance(player_perception: u32, item_perception: u32) -> u32 {
     0
 }
+
+#[wasm_bindgen]
+pub fn bountiful_amount(player_gathering: u32, item_gathering: u32) -> u32 {
+    let threshold_2 = item_gathering * 9 / 10;
+    let threshold_3 = item_gathering * 11 / 10;
+    if player_gathering > threshold_3 {
+        3
+    } else if player_gathering > threshold_2 {
+        2
+    } else {
+        1
+    }
+}

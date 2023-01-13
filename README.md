@@ -5,8 +5,6 @@ Gathering optimizer for FFXIV.
 Tries every possible rotation (except guaranteed-bad decisions) and reports the rotation with the highest average yield. Uses WebAssembly and Rust for *blazing fast* speed.
 
 ## THINGS THAT DONT WORK YET
-* Still not 100% on boon calculation. If you know what you're doing for any of these formulas please get in touch :D
-* BYH2 chance calculation (depends on item level, perception I think)
 * Node success chance calculation (depends on item level, gathering I think)
 
 ## Usage:

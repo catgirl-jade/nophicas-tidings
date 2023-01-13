@@ -63,6 +63,10 @@ const div_result: HTMLElement = document.getElementById("result_rotation")!;
 const div_result_items_outer: HTMLElement = div_result.querySelector("#result_items_outer")!;
 /// Produced number of items written here
 const span_result_items: HTMLElement = div_result_items_outer.querySelector("#result_items")!;
+// Search modal and related elements
+const button_search_modal = <HTMLButtonElement> document.getElementById("button_search_modal")!;
+const input_search = <HTMLInputElement> document.getElementById("input_search")!;
+const button_search_execute = <HTMLButtonElement> document.getElementById("button_search_execute")!;
 
 // Keys used to store player stats in localStorage
 const LEVEL_KEY: string = "level"; 
@@ -289,7 +293,7 @@ form_params.onsubmit = async function(ev) {
   await start_calculations();
   return false;
 }
-async function update_item_stats(ev: Event | null) {
+async function update_from_item_level(ev: Event | null) {
   let item_level = parseInt(input_item_level.value);
   // Mark the valids invalid until we have new values
   mark_validity(div_item_gathering, false);
@@ -309,9 +313,9 @@ async function update_item_stats(ev: Event | null) {
   return false;
 }
 // Set the callback
-input_item_level.onchange = update_item_stats;
+input_item_level.onchange = update_from_item_level;
 // Call it once for the first time so we have initial values
-await update_item_stats(null);
+await update_from_item_level(null);
 
 // Updates variables that are based on player gathering score
 function update_from_gathering(ev: Event | null) {
@@ -368,3 +372,18 @@ function create_invalidate_callback(label: HTMLLabelElement) {
 } 
 input_item_boon_chance.onchange = create_invalidate_callback(label_boon_chance);
 input_item_bountiful_bonus.onchange = create_invalidate_callback(label_bountiful_bonus);
+
+// Add search functionality
+button_search_modal.onclick = async function(event: MouseEvent) {
+  // Reset the search box
+  input_search.value = "";
+  return true; 
+}
+button_search_execute.onclick = async function(event: MouseEvent) {
+  // Disable default behavior
+  event.preventDefault();
+  // Get the text of the search phrase
+  let search_phrase = input_search.value;
+  // Perform a search
+  return false; 
+}

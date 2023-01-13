@@ -68,4 +68,13 @@ export async function get_item_base_scores(item_level: number): Promise<BaseScor
     localStorage.setItem(key, entry);
   }
   return { gathering, perception };
-} 
+}
+
+export interface GatherableItem {
+  name: string,
+  item_level: number
+}
+/// Searches for gatherable items
+export async function search_gatherable(query: string): Promise<Array<GatherableItem>> {
+  return new Array();
+}

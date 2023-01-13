@@ -8,10 +8,10 @@
  
    You should have received a copy of the GNU General Public License along with Foobar. If not, see <https:  www.gnu.org licenses >.
 */
-label.validated {
+div.validated, label.validated {
   background-color: #00BB00;
 }
-label.unvalidated {
+div.unvalidated, label.unvalidated {
   background-color: #BB0000;
 }
 span.average-label {

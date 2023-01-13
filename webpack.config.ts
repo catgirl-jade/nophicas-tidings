@@ -64,7 +64,10 @@ module.exports = {
       ".js"
     ],
   },
-  
+  devServer: {
+    watchFiles: ["index.html"],
+    hot: true,
+  }, 
    
   plugins: [
     // Bundles in index.html

@@ -29,7 +29,7 @@
   <div class="row">
     <div class="col-sm-3">
       <form id="parameters">
-        <h3>Player</h3>
+        <h4>Player</h4>
         <label for="player_level">Level</label>
         <input id="player_level" type="number" value=90 min=1 max=90 size=3 title="Your character's MIN/BTN level"/><br>
         <label for="player_gp">GP</label>
@@ -38,38 +38,39 @@
         <input id="player_gathering" type="number" value=3600 min=0 size=4 title="Your gathering stat"/><br>
         <label for="player_perception">Perception</label>
         <input id="player_perception" type="number" value=3600 min=0 size=4 title="Your perception stat"/><br>
-        <h3>Node</h3>
+        <h4>Node</h4>
         <label for="node_durability">Durability</label>
         <input id="node_durability" type="number" value=4 min=0 size=2 title="How many times you can hit the node before it disappears"/>
         <label for="node_durability">whacks</label><br>
-        <h3>Item</h3>
+        <h4>Item</h4>
         <label for="item_level">Item Level: </label>
-        <input id="item_level" type="number" value=590 min=0 size=4 title="Item level of the item"/><br>
-        <div id="item_gathering" class="calculated_stat">
+        <input id="item_level" type="number" value=590 min=0 size=4 title="Item level of the item"/>
+        <button id="button_search_modal" type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#search_modal">&#x1F50D;</button><br>
+        <div id="item_gathering">
           <span>Base gathering: </span><span id="item_gathering_value"></span>
         </div>
-        <div id="item_perception" class="calculated_stat"> 
+        <div id="item_perception"> 
           <span>Base perception: </span><span id="item_perception_value"></span>
         </div>
         <label id="label_success_chance" for="item_success_chance">Gather chance</label>
         <input id="item_success_chance" type="number" value=100 min=0 size=4 title="Chance of gathering the item"/>
         <label for="item_success_chance">%</label><br>
         <label for="item_gather_amount">Base gather</label>
-        <input id="item_gather_amount" type="number" value=1 min=0 size=2 title="Amount of items you gather per whack by default"/>
+        <input id="item_gather_amount" type="number" value=1 min=1 size=2 title="Amount of items you gather per whack by default"/>
         <label for="item_gather_amount">items</label><br>
         <label id="label_boon_chance" for="item_boon_chance">Boon chance</label>
         <input id="item_boon_chance" type="number" value=100 min=0 size=4 title="Chance of triggering gatherer's boon" />
-        <label id="label_bountiful_bonus" for="item_boon_chance">%</label><br>
-        <label for="item_bountiful_bonus">Bountiful bonus</label>
+        <label for="item_boon_chance">%</label><br>
+        <label id="label_bountiful_bonus" for="item_bountiful_bonus">Bountiful bonus</label>
         <input id="item_bountiful_bonus" type="number" value=2 min=0 size=2 title="How many items you get for using Bountiful II" />
         <label for="item_bountiful_bonus">items</label><br>
         <input id="submit" type="submit" value="Simulate" />
       </form>
-      <div>
+      <div class="align-bottom">
+        <p>Read the <a href="https://github.com/catgirl-jade/nophicas-tidings/blob/main/README.md">README</a> for updates and basic info on how to use this tool</p>
+        <p>Report any issues to <a href="https://github.com/catgirl-jade/nophicas-tidings">the github</a> or to rikyua#0413</p>
+        <p>FINAL FANTASY XIV © 2010 - 2023 SQUARE ENIX CO., LTD. All Rights Reserved.</p>
       </div>
-      <div class="align-bottom">Read the <a href="https://github.com/catgirl-jade/nophicas-tidings/blob/main/README.md">README</a> for updates and basic info on how to use this tool</div>
-      <div class="align-bottom">Report any issues to <a href="https://github.com/catgirl-jade/nophicas-tidings">the github</a> or to rikyua#0413</div>
-      <div class="align-bottom">FINAL FANTASY XIV © 2010 - 2023 SQUARE ENIX CO., LTD. All Rights Reserved.</div>
     </div>
     <div id="result_rotation" class="col">
       <div id="calc_message" class="row" style="display: none;">
@@ -81,6 +82,28 @@
       <div class="row result-header">
         <div class="col-sm-1">Items</div>
         <div class="col">Ability</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Search Modal -->
+<!-- Modal -->
+<div class="modal fade" id="search_modal" tabindex="-1" aria-labelledby="label_search_modal" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="label_search_modal">Search for Item</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="input-group mb-3">
+          <input type="text" class="form-control" placeholder="Item Name" aria-label="Item Name" aria-describedby="search_button_execute" id="input_search">
+          <button class="btn btn-outline-secondary" type="button" id="button_search_execute">Search</button>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
       </div>
     </div>
   </div>

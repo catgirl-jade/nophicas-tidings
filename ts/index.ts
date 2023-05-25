@@ -131,38 +131,23 @@ async function display_result(result: any) {
   span_result_items.innerText = result.items;
   // Store a list of icons we need to request
   let action_icons = new Map<number, Array<HTMLImageElement>>();
-  let item_icons = new Map<number, Array<HTMLImageElement>>();
   // A convenience function for updating these
   function update_icon_list(
-    icons: Map<number, Array<HTMLImageElement>>,
     id: number,
     image: HTMLImageElement,
   ) {
-    if (icons.has(id)) {
-      icons.get(id)!.push(image); 
+    if (action_icons.has(id)) {
+      action_icons.get(id)!.push(image); 
     }
     else {
-      icons.set(id, new Array(image));
-    }
-  }
-  function update_icon_lists(
-    type: string,
-    id: number,
-    image: HTMLImageElement,
-  ) {
-    if (type == "action") {
-        update_icon_list(action_icons, id, image);
-    }
-    else if (type == "item") {
-        update_icon_list(item_icons, id, image);
+      action_icons.set(id, new Array(image));
     }
   }
   function render_icons(
     icons: Map<number, Array<HTMLImageElement>>,
-    type: string
   ) {
     for (let [id, imgs] of icons) {
-      let url = get_icon_url(type, id); 
+      let url = get_icon_url(id); 
       if (url) {
         for (let img of imgs) {
           img.src = url;
@@ -206,17 +191,13 @@ async function display_result(result: any) {
     // Finally, store the row into the action list 
     div_result.appendChild(div_action);
     // Finally, store some references for the icons
-    let icon_min = action.action.id_min;
-    let icon_btn = action.action.id_btn;
-    update_icon_lists(icon_min.type, icon_min.id, img_min);  
-    update_icon_lists(icon_btn.type, icon_btn.id, img_btn); 
+    update_icon_list(action.action.id_min, img_min);  
+    update_icon_list(action.action.id_btn, img_btn); 
   }
   // Finally, we want to request icons
-  find_icons("item", item_icons.keys()); 
-  find_icons("action", action_icons.keys());
+  find_icons(action_icons.keys());
   // Render the icons
-  render_icons(item_icons, "item");
-  render_icons(action_icons, "action");
+  render_icons(action_icons);
   // Cleanup and return the page to become usable again
   set_form_disabled(false);
 }

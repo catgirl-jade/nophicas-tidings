@@ -108,6 +108,9 @@ module.exports = {
     asyncWebAssembly: true,
     topLevelAwait: true,
   },
+  performance: {
+    hints: false
+  },
 };
 
 if (MODE === "development") {

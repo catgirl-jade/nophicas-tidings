@@ -22,46 +22,143 @@
   <h1>Nophica's Tidings</h1>
 </div>
   
-<div class="container mt-2">
+<div class="container mt-2 mx-2">
   <div class="row">
-    <div class="col-sm-3">
+    <div class="col-sm-4">
       <form id="parameters">
         <h4>Player</h4>
-        <label for="player_level">Level</label>
-        <input id="player_level" type="number" value=90 min=1 max=90 size=3 title="Your character's MIN/BTN level"/><br>
-        <label for="player_gp">GP</label>
-        <input id="player_gp" type="number" value=900 min=0 size=4 title="Your maximum GP, or how much GP you have going into the node"/><br>
-        <label for="player_gathering">Gathering</label>
-        <input id="player_gathering" type="number" value=3600 min=0 size=4 title="Your gathering stat"/><br>
-        <label for="player_perception">Perception</label>
-        <input id="player_perception" type="number" value=3600 min=0 size=4 title="Your perception stat"/><br>
-        <h4>Node</h4>
-        <label for="node_durability">Durability</label>
-        <input id="node_durability" type="number" value=4 min=0 size=2 title="How many times you can hit the node before it disappears"/>
-        <label for="node_durability">whacks</label><br>
-        <h4>Item</h4>
-        <label for="item_level">Item Level: </label>
-        <input id="item_level" type="number" value=590 min=0 size=4 title="Item level of the item"/>
-        <button id="button_search_modal" type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#search_modal">&#x1F50D;</button><br>
-        <div id="item_gathering">
-          <span>Base gathering: </span><span id="item_gathering_value"></span>
+        <div class="input-group mb-3">
+          <span class="input-group-text">Level</span> 
+          <input
+            class="form-control"
+            id="input_player_level"
+            type="number"
+            value=90
+            min=1 max=90
+            size=3
+            title="Your character's MIN/BTN level"
+          />
+          <span class="input-group-text">GP</span> 
+          <input
+            class="form-control"
+            id="input_player_gp"
+            type="number"
+            value=900
+            min=0
+            size=4
+            title="Your maximum GP, or how much GP you have going into the node"
+          />
         </div>
-        <div id="item_perception"> 
-          <span>Base perception: </span><span id="item_perception_value"></span>
+        <div class="input-group mb-3">
+          <span class="input-group-text">Gathering</span>
+          <input
+            class="form-control"
+            id="input_player_gathering"
+            type="number"
+            value=3600
+            min=0
+            size=4
+            title="Your gathering stat"
+          />
+          <span class="input-group-text">Perception</span>
+          <input
+            class="form-control"
+            id="input_player_perception"
+            type="number"
+            value=3600
+            min=0
+            size=4
+            title="Your perception stat"
+          />
+        </div>
+        <h4>Node</h4>
+        <div class="input-group mb-3">
+          <span class="input-group-text">Durability</span>
+          <input
+            class="form-control"
+            id="input_node_durability"
+            type="number"
+            value=6
+            min=0
+            size=2
+            title="How many times you can hit the node before it disappears"
+            aria-describedby="span_durability_suffix"
+          />
+          <span class="input-group-text">Boon bonus</span>
+          <input
+            class="form-control"
+            id="input_node_boon_bonus"
+            type="number"
+            value=0
+            min=0
+            max=100
+            size=3
+            title="How many times you can hit the node before it disappears"
+            aria-describedby="span_durability_suffix"
+          />
+          <span class="input-group-text" id="span_durability_suffix">%</span>
+        </div>
+        <h4>Item</h4>
+        <div class="input-group mb-3">
+          <div class="form-floating">
+            <input
+              class="form-control"
+              id="input_item_level"
+              type="number"
+              value=590
+              min=0
+              size=4
+              title="Item level of the item"
+              aria-describedby="button_search_modal"
+            />
+            <label for="item_level">Item level</label>
+          </div>
+          <button
+            id="button_search_modal"
+            type="button"
+            class="btn
+            btn-primary"
+            data-bs-toggle="modal"
+            data-bs-target="#search_modal"
+          >
+              &#x1F50D;
+          </button>
+          <div class="form-floating">
+            <input
+              class="form-control"
+              id="input_item_gathering"
+              min=0
+              size=4
+              title="Your gathering stat"
+              disabled readonly
+            />
+            <label for="input_item_gathering">Gathering</label>
+          </div>
+          <div class="form-floating">
+            <input
+              class="form-control"
+              id="input_item_perception"
+              min=0
+              size=4
+              title="Your perception stat"
+              disabled readonly
+            />
+            <label for="input_item_perception">Perception</label>
+          </div>
         </div>
         <label id="label_success_chance" for="item_success_chance">Gather chance</label>
-        <input id="item_success_chance" type="number" value=100 min=0 size=4 title="Chance of gathering the item"/>
+        <input class="form-control" id="item_success_chance" type="number" value=100 min=0 size=4 title="Chance of gathering the item"/>
         <label for="item_success_chance">%</label><br>
         <label for="item_gather_amount">Base gather</label>
-        <input id="item_gather_amount" type="number" value=1 min=1 size=2 title="Amount of items you gather per whack by default"/>
+        <input class="form-control" id="item_gather_amount" type="number" value=1 min=1 size=2 title="Amount of items you gather per whack by default"/>
         <label for="item_gather_amount">items</label><br>
         <label id="label_boon_chance" for="item_boon_chance">Boon chance</label>
-        <input id="item_boon_chance" type="number" value=100 min=0 size=4 title="Chance of triggering gatherer's boon" />
+        <input class="form-control" id="item_boon_chance" type="number" value=100 min=0 size=4 title="Chance of triggering gatherer's boon" />
         <label for="item_boon_chance">%</label><br>
         <label id="label_bountiful_bonus" for="item_bountiful_bonus">Bountiful bonus</label>
-        <input id="item_bountiful_bonus" type="number" value=2 min=0 size=2 title="How many items you get for using Bountiful II" />
+        <input class="form-control" id="item_bountiful_bonus" type="number" value=2 min=0 size=2 title="How many items you get for using Bountiful II" />
         <label for="item_bountiful_bonus">items</label><br>
-        <input id="submit" type="submit" value="Simulate" />
+        <input class="form-control" id="submit" type="submit" value="Simulate" />
       </form>
       <div class="align-bottom">
         <p>Read the <a href="https://github.com/catgirl-jade/nophicas-tidings/blob/main/README.md">README</a> for updates and basic info on how to use this tool</p>
@@ -96,7 +193,7 @@
       <div class="modal-body">
         <form id="form_search">
         <div class="input-group mb-3">
-          <input type="text" class="form-control" placeholder="Item Name" aria-label="Item Name" aria-describedby="search_button_execute" id="input_search">
+          <input class="form-control" type="text" class="form-control" placeholder="Item Name" aria-label="Item Name" aria-describedby="search_button_execute" id="input_search">
           <button class="btn btn-primary" type="submit" id="button_search_execute">Search</button>
         </div>
         <form>

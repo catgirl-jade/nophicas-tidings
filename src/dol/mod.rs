@@ -591,64 +591,39 @@ impl GatherAction {
             Gather { .. } => 0,
         }
     }
-    fn min_icon(&self) -> IconId {
+    fn min_icon(&self) -> u32 {
         use GatherAction::*;
-        use IconId::*;
         match self {
-            SharpVisionFieldMastery(SVFMRank::I) => Action(235),
-            SharpVisionFieldMastery(SVFMRank::II) => Action(237),
-            SharpVisionFieldMastery(SVFMRank::III) => Action(295),
-            Gift(GiftRank::I) => Action(21177),
-            Gift(GiftRank::II) => Action(25589),
-            Bountiful => Action(272), // Also 4073 for I,
-            SolidReasonAgelessWords => Action(232),
-            BlessedKing(BlessedKingRank::I) => Action(239),
-            BlessedKing(BlessedKingRank::II) => Action(241),
-            Tidings => Action(21203),
-            WiseToTheWorld => Action(26521),
-            Gather { .. } => Item(10140),
+            SharpVisionFieldMastery(SVFMRank::I) => 235,
+            SharpVisionFieldMastery(SVFMRank::II) => 237,
+            SharpVisionFieldMastery(SVFMRank::III) => 295,
+            Gift(GiftRank::I) => 21177,
+            Gift(GiftRank::II) => 25589,
+            Bountiful => 272, // Also 4073 for I,
+            SolidReasonAgelessWords => 232,
+            BlessedKing(BlessedKingRank::I) => 239,
+            BlessedKing(BlessedKingRank::II) => 241,
+            Tidings => 21203,
+            WiseToTheWorld => 26521,
+            Gather { .. } => 240,
         }
     }
-    fn btn_icon(&self) -> IconId {
+    fn btn_icon(&self) -> u32 {
         use GatherAction::*;
-        use IconId::*;
         match self {
-            SharpVisionFieldMastery(SVFMRank::I) => Action(218),
-            SharpVisionFieldMastery(SVFMRank::II) => Action(220),
-            SharpVisionFieldMastery(SVFMRank::III) => Action(294),
-            Gift(GiftRank::I) => Action(21178),
-            Gift(GiftRank::II) => Action(25590),
-            Bountiful => Action(272), // Also 4087 for I,
-            SolidReasonAgelessWords => Action(215),
-            BlessedKing(BlessedKingRank::I) => Action(222),
-            BlessedKing(BlessedKingRank::II) => Action(224),
-            Tidings => Action(21204),
-            WiseToTheWorld => Action(26522),
-            Gather { .. } => Item(10141),
+            SharpVisionFieldMastery(SVFMRank::I) => 218,
+            SharpVisionFieldMastery(SVFMRank::II) => 220,
+            SharpVisionFieldMastery(SVFMRank::III) => 294,
+            Gift(GiftRank::I) => 21178,
+            Gift(GiftRank::II) => 25590,
+            Bountiful => 272, // Also 4087 for I,
+            SolidReasonAgelessWords => 215,
+            BlessedKing(BlessedKingRank::I) => 222,
+            BlessedKing(BlessedKingRank::II) => 224,
+            Tidings => 21204,
+            WiseToTheWorld => 26522,
+            Gather { .. } => 815,
         }
-    }
-}
-enum IconId {
-    Item(u32),
-    Action(u32),
-}
-impl Serialize for IconId {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        use serde::ser::SerializeStruct;
-        // Start the map, gathers get an extra field
-        let mut obj = serializer.serialize_struct("IconId", 2)?;
-        // Action ids
-        let (ty, id) = match self {
-            IconId::Action(id) => ("action", id),
-            IconId::Item(id) => ("item", id),
-        };
-        obj.serialize_field("type", &ty)?;
-        obj.serialize_field("id", &id)?;
-        // Return the resulting obj
-        obj.end()
     }
 }
 lazy_static! {

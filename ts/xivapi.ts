@@ -2,15 +2,15 @@
 const XIVAPI_BASE: string = "https://xivapi.com";
 
 /// Quick helper function to reduce duplication
-export function make_icon_key(t: string, id: number): string {
-  return `icon/${t}/${id}`;
+export function make_icon_key(id: number): string {
+  return `icon/action/${id}`;
 }
 
 /// Checks local cache for image urls before hitting XIVAPI
-export async function find_icons(ty: string, ids: Iterable<number>) {
+export async function find_icons(ids: Iterable<number>) {
   let unknown_ids = new Array<number>();
   for (let id of ids) {
-    let key = make_icon_key(ty, id); 
+    let key = make_icon_key(id); 
     let path = localStorage.getItem(key);
     if (!path) {
       unknown_ids.push(id);
@@ -19,17 +19,17 @@ export async function find_icons(ty: string, ids: Iterable<number>) {
   let id_string = unknown_ids.map((id) => id.toString()).join(",");
   if (unknown_ids.length > 0) {
     // Batch all the unknown ids into a single request
-    let resp = await fetch(`${XIVAPI_BASE}/${ty}?` + new URLSearchParams({ids: id_string}));
+    let resp = await fetch(`${XIVAPI_BASE}/action?` + new URLSearchParams({ids: id_string}));
     let body = await resp.json();
     // Cache all the newly requested ids
     for (let result of body.Results) {
-      let key = make_icon_key(ty, result.ID);
-      localStorage.setItem(key, result.Icon);
+      let key = make_icon_key(result.ID);
+      localStorage.setItem(key ,result.Icon);
     }
   }
 }
-export function get_icon_url(type: string, id: number) {
-  let key = make_icon_key(type, id);
+export function get_icon_url(id: number) {
+  let key = make_icon_key(id);
   if (key) {
     let path = localStorage.getItem(key);
     if (path) {

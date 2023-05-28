@@ -31,7 +31,7 @@
           <span class="input-group-text">Level</span> 
           <input
             class="form-control"
-            id="input_player_level"
+            id="player_level"
             type="number"
             value=90
             min=1 max=90
@@ -41,7 +41,7 @@
           <span class="input-group-text">GP</span> 
           <input
             class="form-control"
-            id="input_player_gp"
+            id="player_gp"
             type="number"
             value=900
             min=0
@@ -53,7 +53,7 @@
           <span class="input-group-text">Gathering</span>
           <input
             class="form-control"
-            id="input_player_gathering"
+            id="player_gathering"
             type="number"
             value=3600
             min=0
@@ -63,7 +63,7 @@
           <span class="input-group-text">Perception</span>
           <input
             class="form-control"
-            id="input_player_perception"
+            id="player_perception"
             type="number"
             value=3600
             min=0
@@ -76,7 +76,7 @@
           <span class="input-group-text">Durability</span>
           <input
             class="form-control"
-            id="input_node_durability"
+            id="node_durability"
             type="number"
             value=6
             min=0
@@ -87,13 +87,13 @@
           <span class="input-group-text">Boon bonus</span>
           <input
             class="form-control"
-            id="input_node_boon_bonus"
+            id="node_boon_bonus"
             type="number"
-            value=0
+            value=1
             min=0
-            max=100
-            size=3
-            title="How many times you can hit the node before it disappears"
+            max=10
+            size=1
+            title="Number of items granted by Gatherer's Boon"
             aria-describedby="span_durability_suffix"
           />
           <span class="input-group-text" id="span_durability_suffix">%</span>
@@ -103,15 +103,15 @@
           <div class="form-floating">
             <input
               class="form-control"
-              id="input_item_level"
+              id="gathering_level"
               type="number"
               value=590
               min=0
               size=4
-              title="Item level of the item"
+              title="Gathering level of the item"
               aria-describedby="button_search_modal"
             />
-            <label for="item_level">Item level</label>
+            <label for="gathering_level">Item level</label>
           </div>
           <button
             id="button_search_modal"
@@ -126,39 +126,115 @@
           <div class="form-floating">
             <input
               class="form-control"
-              id="input_item_gathering"
+              id="item_gathering"
               min=0
               size=4
               title="Your gathering stat"
               disabled readonly
             />
-            <label for="input_item_gathering">Gathering</label>
+            <label for="item_gathering">Gathering</label>
           </div>
           <div class="form-floating">
             <input
               class="form-control"
-              id="input_item_perception"
+              id="item_perception"
               min=0
               size=4
               title="Your perception stat"
               disabled readonly
             />
-            <label for="input_item_perception">Perception</label>
+            <label for="item_perception">Perception</label>
           </div>
         </div>
-        <label id="label_success_chance" for="item_success_chance">Gather chance</label>
-        <input class="form-control" id="item_success_chance" type="number" value=100 min=0 size=4 title="Chance of gathering the item"/>
-        <label for="item_success_chance">%</label><br>
-        <label for="item_gather_amount">Base gather</label>
-        <input class="form-control" id="item_gather_amount" type="number" value=1 min=1 size=2 title="Amount of items you gather per whack by default"/>
-        <label for="item_gather_amount">items</label><br>
-        <label id="label_boon_chance" for="item_boon_chance">Boon chance</label>
-        <input class="form-control" id="item_boon_chance" type="number" value=100 min=0 size=4 title="Chance of triggering gatherer's boon" />
-        <label for="item_boon_chance">%</label><br>
-        <label id="label_bountiful_bonus" for="item_bountiful_bonus">Bountiful bonus</label>
-        <input class="form-control" id="item_bountiful_bonus" type="number" value=2 min=0 size=2 title="How many items you get for using Bountiful II" />
-        <label for="item_bountiful_bonus">items</label><br>
-        <input class="form-control" id="submit" type="submit" value="Simulate" />
+        <div class="input-group mb-3">
+          <div class="form-floating">
+            <input
+              class="form-control"
+              id="item_success_chance"
+              type="number"
+              value=100
+              min=0
+              max=100
+              size=3
+              title="Chance at successfully gathering the item"
+              aria-describedby="span_success_chance_suffix"
+            />
+            <label for="item_success_chance">Success Chance</label>
+          </div>
+          <span class="input-group-text" id="span_success_chance_suffix">%</span>
+          <div class="form-floating">
+            <input
+              class="form-control"
+              id="item_gather_amount"
+              type="number"
+              value=1
+              min=1
+              size=2
+              title="Amount of items you gather per whack by default"
+            />
+            <label for="item_gather_amount">Base Gather</label>
+          </div>
+          <span class="input-group-text">items</span>
+        </div>
+        <div class="input-group mb-3" id="div_boon_chance">
+          <div class="form-floating">
+            <input
+              class="form-control"
+              id="item_boon_chance"
+              type="number"
+              value=100
+              min=0
+              max=100
+              size=3
+              title="Chance of triggering Gatherer's Boon"
+            />
+            <label for="item_boon_chance">Boon Chance</label>
+          </div>
+          <span class="input-group-text">+</span>
+          <div class="form-floating">
+            <input
+              class="form-control"
+              id="item_boon_chance_bonus"
+              type="number"
+              value=0
+              min=0
+              max=100
+              size=3
+              title="Extra Chance of triggering Gatherer's Boon"
+            />
+            <label for="item_boon_chance">Node bonus</label>
+          </div>
+          <span class="input-group-text">=</span>
+          <div class="form-floating">
+            <input
+              class="form-control"
+              id="item_boon_chance_total"
+              type="number"
+              value=0
+              min=0
+              max=100
+              size=3
+              disabled readonly
+              title="Extra Chance of triggering Gatherer's Boon"
+            />
+            <label for="item_boon_chance">Total</label>
+          </div>
+          <span class="input-group-text">%</span>
+        </div>
+        <div class="form-floating" id="div_bountiful_bonus">
+          <input
+            class="form-control"
+            id="item_bountiful_bonus"
+            type="number"
+            value=0
+            min=0
+            max=10
+            size=3
+            title="How many items you earn for using Bountiful Yield/Harvest II"
+          />
+          <label for="item_bountiful_bonus">Bountiful Bonus</label>
+        </div>
+        <input id="submit" class="btn btn-primary btn-lg btn-block" type="submit" value="Simulate">
       </form>
       <div class="align-bottom">
         <p>Read the <a href="https://github.com/catgirl-jade/nophicas-tidings/blob/main/README.md">README</a> for updates and basic info on how to use this tool</p>
@@ -193,15 +269,15 @@
       <div class="modal-body">
         <form id="form_search">
         <div class="input-group mb-3">
-          <input class="form-control" type="text" class="form-control" placeholder="Item Name" aria-label="Item Name" aria-describedby="search_button_execute" id="input_search">
+          <input class="form-control" type="text" class="form-control" placeholder="Item Name" aria-label="Item Name" aria-describedby="search_button_execute" id="search">
           <button class="btn btn-primary" type="submit" id="button_search_execute">Search</button>
         </div>
         <form>
         <!-- Here we start with the body of the search -->
-        <div id="div_search_results">
+        <div id="search_results">
           <div class="row">
             <div class="col-sm-auto">Icon</div>
-            <div class="col-sm-auto">ILvl</div>
+            <div class="col-sm-auto">GLvl</div>
             <div class="col-sm-auto">Name</div>
           </div>
         </div>

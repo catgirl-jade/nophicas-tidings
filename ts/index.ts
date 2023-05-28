@@ -21,56 +21,57 @@ import * as nophicas_tidings from "../pkg";
 
 /// Globals referencing HTML fields
 /// The whole form
-const form_params = <HTMLFormElement> document.getElementById("parameters")!;
+const form_params = <HTMLFormElement> document.querySelector("form#parameters")!;
 // Player stats
 /// Level
-const input_player_level = <HTMLInputElement> document.getElementById("player_level")!;
+const input_player_level = <HTMLInputElement> document.querySelector("input#player_level")!;
 /// GP 
-const input_player_gp = <HTMLInputElement> document.getElementById("player_gp")!;
+const input_player_gp = <HTMLInputElement> document.querySelector("input#player_gp")!;
 /// Gathering 
-const input_player_gathering = <HTMLInputElement> document.getElementById("player_gathering")!;
+const input_player_gathering = <HTMLInputElement> document.querySelector("input#player_gathering")!;
 /// Perception
-const input_player_perception = <HTMLInputElement> document.getElementById("player_perception")!;
+const input_player_perception = <HTMLInputElement> document.querySelector("input#player_perception")!;
 // Node stats
 /// Durability 
-const input_node_durability = <HTMLInputElement> document.getElementById("node_durability")!;
+const input_node_durability = <HTMLInputElement> document.querySelector("input#node_durability")!;
 // Item stats
 // Item level
-const input_item_level = <HTMLInputElement> document.getElementById("item_level")!;
+const input_gathering_level = <HTMLInputElement> document.querySelector("input#gathering_level")!;
 // Calculated from item level
 /// Gathering base score
-const div_item_gathering = <HTMLDivElement> document.getElementById("item_gathering")!;
-const span_item_gathering_value = <HTMLSpanElement> document.getElementById("item_gathering_value")!;
+const input_item_gathering = <HTMLInputElement> document.querySelector("input#item_gathering")!;
+const span_item_gathering_value = <HTMLSpanElement> document.querySelector("span#item_gathering_value")!;
 /// Perception base score
-const div_item_perception = <HTMLDivElement> document.getElementById("item_perception")!;
-const span_item_perception_value = <HTMLSpanElement> document.getElementById("item_perception_value")!;
+const input_item_perception = <HTMLInputElement> document.querySelector("input#item_perception")!;
+const span_item_perception_value = <HTMLSpanElement> document.querySelector("span#item_perception_value")!;
 /// Chance to successfully gather
-const label_success_chance = <HTMLLabelElement> document.getElementById("label_success_chance")!;
-const input_item_success_chance = <HTMLInputElement> document.getElementById("item_success_chance")!;
+const label_success_chance = <HTMLLabelElement> document.querySelector("label#label_success_chance")!;
+const input_item_success_chance = <HTMLInputElement> document.querySelector("input#item_success_chance")!;
 /// Base amount
-const input_item_gather_amount = <HTMLInputElement> document.getElementById("item_gather_amount")!;
+const input_item_gather_amount = <HTMLInputElement> document.querySelector("input#item_gather_amount")!;
 /// Chance to trigger gatherers boon
-const label_boon_chance = <HTMLLabelElement> document.getElementById("label_boon_chance")!;
-const input_item_boon_chance = <HTMLInputElement> document.getElementById("item_boon_chance")!;
+const input_item_boon_chance = <HTMLInputElement> document.querySelector("input#item_boon_chance")!;
+const input_item_boon_chance_bonus= <HTMLInputElement> document.querySelector("input#item_boon_chance_bonus")!;
+const input_item_boon_chance_total = <HTMLInputElement> document.querySelector("input#item_boon_chance_total")!;
 /// Amount granted by bountiful yield
-const label_bountiful_bonus = <HTMLLabelElement> document.getElementById("label_bountiful_bonus")!;
-const input_item_bountiful_bonus = <HTMLInputElement> document.getElementById("item_bountiful_bonus")!;
+const div_bountiful_bonus = <HTMLLabelElement> document.querySelector("div#div_bountiful_bonus")!;
+const input_item_bountiful_bonus = <HTMLInputElement> document.querySelector("input#item_bountiful_bonus")!;
 /// Button to perform simulation
-const input_submit = <HTMLInputElement> document.getElementById("submit")!;
-const div_calc_message = <HTMLDivElement> document.getElementById("calc_message")!;
+const input_submit = <HTMLInputElement> document.querySelector("input#submit")!;
+const div_calc_message = <HTMLDivElement> document.querySelector("div#calc_message")!;
 /// Stores result of calculation
-const div_result = <HTMLDivElement> document.getElementById("result_rotation")!;
+const div_result = <HTMLDivElement> document.querySelector("div#result_rotation")!;
 /// Wrapper div for number of items
-const div_result_items_outer: HTMLDivElement = div_result.querySelector("#result_items_outer")!;
+const div_result_items_outer: HTMLDivElement = div_result.querySelector("div#result_items_outer")!;
 /// Produced number of items written here
-const span_result_items: HTMLSpanElement = div_result_items_outer.querySelector("#result_items")!;
+const span_result_items: HTMLSpanElement = div_result_items_outer.querySelector("span#result_items")!;
 // Search modal and related elements
-const button_search_modal = <HTMLButtonElement> document.getElementById("button_search_modal")!;
-const div_search_modal = <HTMLDivElement> document.getElementById("search_modal");
-const form_search = <HTMLFormElement> document.getElementById("form_search")!;
-const input_search = <HTMLInputElement> document.getElementById("input_search")!;
-const button_search_execute = <HTMLButtonElement> document.getElementById("button_search_execute")!;
-const div_search_results = <HTMLDivElement> document.getElementById("div_search_results");
+const button_search_modal = <HTMLButtonElement> document.querySelector("button#button_search_modal")!;
+const div_search_modal = <HTMLDivElement> document.querySelector("div#search_modal");
+const form_search = <HTMLFormElement> document.querySelector("form#form_search")!;
+const input_search = <HTMLInputElement> document.querySelector("input#search")!;
+const button_search_execute = <HTMLButtonElement> document.querySelector("button#button_search_execute")!;
+const div_search_results = <HTMLDivElement> document.querySelector("div#search_results");
 
 // Keys used to store player stats in localStorage
 const LEVEL_KEY: string = "level"; 
@@ -212,7 +213,7 @@ function set_form_disabled(value: boolean) {
   input_player_gathering.disabled = value;
   input_player_perception.disabled = value;
   input_node_durability.disabled = value;
-  input_item_level.disabled = value;
+  input_gathering_level.disabled = value;
   input_item_success_chance.disabled = value;
   input_item_gather_amount.disabled = value;
   input_item_boon_chance.disabled = value;
@@ -228,7 +229,7 @@ async function start_calculations() {
   let node_durability = parseInt(input_node_durability.value);
   let item_success_chance = parseInt(input_item_success_chance.value);
   let item_gather_amount = parseInt(input_item_gather_amount.value);
-  let item_boon_chance = parseInt(input_item_boon_chance.value);
+  let item_boon_chance = parseInt(input_item_boon_chance_total.value);
   let item_bountiful_bonus = parseInt(input_item_bountiful_bonus.value);
   // Clear out the 2 output fields in case there was data in them
   div_result_items_outer.style.display = "none";
@@ -278,35 +279,35 @@ form_params.onsubmit = async function(ev) {
   await start_calculations();
   return false;
 }
-async function update_from_item_level(ev: Event | null) {
-  let item_level = parseInt(input_item_level.value);
+async function update_from_gathering_level(ev: Event | null) {
+  let gathering_level = parseInt(input_gathering_level.value);
   // Mark the valids invalid until we have new values
-  mark_validity(div_item_gathering, false);
-  mark_validity(div_item_perception, false);
-  span_item_gathering_value.innerText = "...";
-  span_item_perception_value.innerText = "...";
+  mark_validity(input_item_gathering, false);
+  mark_validity(input_item_perception, false);
+  input_item_gathering.value= "...";
+  input_item_perception.value = "...";
   // Request the new stats
-  let new_stats = await get_item_base_scores(item_level);
-  span_item_gathering_value.innerText = new_stats.gathering.toString();
-  span_item_perception_value.innerText = new_stats.perception.toString();
+  let new_stats = await get_item_base_scores(gathering_level);
+  input_item_gathering.value = new_stats.gathering.toString();
+  input_item_perception.value= new_stats.perception.toString();
   // Mark the stats as valid again
-  mark_validity(div_item_gathering, true);
-  mark_validity(div_item_perception, true);
+  mark_validity(input_item_gathering, true);
+  mark_validity(input_item_perception, true);
   // Since we're recalculating item stats, update the dependent variables
   update_from_gathering(null);
   update_from_perception(null);
   return false;
 }
 // Set the callback
-input_item_level.onchange = update_from_item_level;
+input_gathering_level.onchange = update_from_gathering_level;
 // Call it once for the first time so we have initial values
-await update_from_item_level(null);
+await update_from_gathering_level(null);
 
 // Updates variables that are based on player gathering score
 function update_from_gathering(ev: Event | null) {
   // Read both gathering scores
   let player_gathering = parseInt(input_player_gathering.value);
-  let item_gathering = parseInt(span_item_gathering_value.innerText);
+  let item_gathering = parseInt(input_item_gathering.value);
   // Calculate success rate and bountiful bonus
   let success_rate = nophicas_tidings.success_chance(player_gathering, item_gathering);
   let bountiful_bonus = nophicas_tidings.bountiful_amount(player_gathering, item_gathering);
@@ -314,7 +315,7 @@ function update_from_gathering(ev: Event | null) {
   // input_item_success_chance.value = success_rate.toString();
   // mark_validity(label_success_chance, true);
   input_item_bountiful_bonus.value = bountiful_bonus.toString();
-  mark_validity(label_bountiful_bonus, true);
+  mark_validity(div_bountiful_bonus, true);
 }
 // Set the callback
 input_player_gathering.addEventListener("change", update_from_gathering);
@@ -325,12 +326,13 @@ update_from_gathering(null);
 function update_from_perception(ev: Event | null) {
   // Read both perception scores
   let player_perception = parseInt(input_player_perception.value);
-  let item_perception = parseInt(span_item_perception_value.innerText);
+  let item_perception = parseInt(input_item_perception.value);
   // Calculate boon rate
   let boon_rate = nophicas_tidings.boon_chance(player_perception, item_perception);
   // Save boon rate and mark it valid
   input_item_boon_chance.value = boon_rate.toString();
-  mark_validity(label_boon_chance, true);
+  mark_validity(input_item_boon_chance, true);
+  update_boon_total(ev);
 }
 // Set the callback
 input_player_perception.addEventListener("change", update_from_perception);
@@ -338,25 +340,38 @@ input_player_perception.addEventListener("change", update_from_perception);
 update_from_perception(null);
 
 // Marks a label/div as validated or invalidated
-function mark_validity(label: HTMLLabelElement | HTMLElement, validity: boolean) {
+function mark_validity(label: HTMLLabelElement | HTMLElement | HTMLDivElement, validity: boolean) {
   if (validity) {
-    label.classList.add("validated");
-    label.classList.remove("unvalidated");
+    label.classList.add("bg-success");
+    label.classList.remove("bg-danger");
   }
   else {
-    label.classList.add("unvalidated");
-    label.classList.remove("validated");
+    label.classList.add("bg-danger");
+    label.classList.remove("bg-success");
   }
 }
 
 /// This function creates a callback which invalidates a label when a calculated value is modified manually
-function create_invalidate_callback(label: HTMLLabelElement) {
+function create_invalidate_callback(label: HTMLLabelElement | HTMLDivElement) {
   return function(ev: Event) {
     mark_validity(label, false);
   }
-} 
-input_item_boon_chance.onchange = create_invalidate_callback(label_boon_chance);
-input_item_bountiful_bonus.onchange = create_invalidate_callback(label_bountiful_bonus);
+}
+function update_boon_total(ev: Event | null) {
+  let total = parseInt(input_item_boon_chance.value) + parseInt(input_item_boon_chance_bonus.value);
+  input_item_boon_chance_total.value = total.toString();
+}
+// Set callback on the boon chance field
+let invalidate_boon_chance = create_invalidate_callback(input_item_boon_chance);
+input_item_boon_chance.onchange = function(ev: Event) {
+  invalidate_boon_chance(ev);
+  update_boon_total(ev);
+}
+// Set callback on the boon bonus field
+input_item_boon_chance_bonus.onchange = update_boon_total;
+
+// Set callback on the bountiful bonus field
+input_item_bountiful_bonus.onchange = create_invalidate_callback(input_item_bountiful_bonus);
 
 // Stop default behavior of the form
 form_search.onsubmit = async function(ev) {
@@ -380,6 +395,7 @@ button_search_execute.onclick = async function(event: MouseEvent) {
   let results = await search_gatherable(input_search.value);
   // Visualize the results
   for (let result of results) {
+    console.log(result);
     // The row
     const div_result = document.createElement("div");
     div_result.classList.add("row");
@@ -392,12 +408,12 @@ button_search_execute.onclick = async function(event: MouseEvent) {
     div_icon.appendChild(img_icon);
     img_icon.src = result.icon;
     div_result.appendChild(div_icon);
-    // The ilvl component
-    const div_ilvl = document.createElement("div");
-    div_ilvl.classList.add("col-sm-auto");
-    div_ilvl.classList.add("search-ilvl");
-    div_ilvl.innerText = result.item_level.toString();
-    div_result.appendChild(div_ilvl);
+    // The glvl component
+    const div_glvl = document.createElement("div");
+    div_glvl.classList.add("col-sm-auto");
+    div_glvl.classList.add("search-glvl");
+    div_glvl.innerText = result.gathering_level.toString();
+    div_result.appendChild(div_glvl);
     // The name
     const div_name = document.createElement("div");
     div_name.classList.add("col-sm-auto");
@@ -413,14 +429,14 @@ button_search_execute.onclick = async function(event: MouseEvent) {
 async function click_search_result(event: Event) {
   // Find the item level
   let row = <HTMLDivElement> event.currentTarget!;
-  let div_ilvl = <HTMLDivElement> row.querySelector(".search-ilvl");
-  let item_level = parseInt(div_ilvl.innerText);
+  let div_ilvl = <HTMLDivElement> row.querySelector(".search-glvl");
+  let gathering_level = parseInt(div_ilvl.innerText);
   // Hide the modal
   let modal = Modal.getInstance(div_search_modal)!;
   await modal.hide();
   // Pass the value to the item level selector
-  input_item_level.value = item_level.toString();
-  await update_from_item_level(null);
+  input_gathering_level.value = gathering_level.toString();
+  await update_from_gathering_level(null);
   // Close the modal
   return false;
 }

@@ -45,8 +45,8 @@ export interface BaseScores {
 }
 
 /// Requests gathering and perception stats for a given item level
-export async function get_item_base_scores(item_level: number): Promise<BaseScores> {
-  let key = `ilvl/${item_level}`;
+export async function get_item_base_scores(gathering_level: number): Promise<BaseScores> {
+  let key = `glvl/${gathering_level}`;
   let cached = localStorage.getItem(key);
   let gathering = null;
   let perception = null;
@@ -58,7 +58,7 @@ export async function get_item_base_scores(item_level: number): Promise<BaseScor
   }
   else {
     // Request info from xivapi 
-    let resp = await fetch(`${XIVAPI_BASE}/ItemLevel/${item_level}`);
+    let resp = await fetch(`${XIVAPI_BASE}/ItemLevel/${gathering_level}`);
     let body = await resp.json();
     // Extract values
     gathering = body.Gathering;
@@ -72,14 +72,21 @@ export async function get_item_base_scores(item_level: number): Promise<BaseScor
 
 export interface GatherableItem {
   name: string,
-  item_level: number,
+  gathering_level: number,
   icon: string
 }
 export interface SearchResult {
   Name: string,
-  LevelItem: number,
+  GameContentLinks: SearchResultGameContentLinks,
   Icon: string,
 }
+export interface SearchResultGameContentLinks {
+  GatheringItem: GameContentLinksGatheringItem
+}
+export interface GameContentLinksGatheringItem {
+  Item: Array<number>
+}
+
 /// Searches for gatherable items
 export async function search_gatherable(query: string): Promise<Array<GatherableItem>> {
   let resp = await fetch("https://xivapi.com/search", {
@@ -87,7 +94,7 @@ export async function search_gatherable(query: string): Promise<Array<Gatherable
       "body":
       JSON.stringify({
         indexes: "Item,GatheringItem",
-        columns: "Name,LevelItem,Icon",
+        columns: "Name,Icon,GameContentLinks.GatheringItem",
         body: {
           query: {
             bool: {
@@ -118,9 +125,30 @@ export async function search_gatherable(query: string): Promise<Array<Gatherable
       })
   });
   let body = await resp.json();
-  return body.Results.map((result: SearchResult) => <GatherableItem>({
+  return await Promise.all(body.Results.map(async (result: SearchResult) => <GatherableItem>({
     name: result.Name,
-    item_level: result.LevelItem,
+    gathering_level: await get_item_gathering_level(result.GameContentLinks.GatheringItem.Item[0]),
     icon: `${XIVAPI_BASE}${result.Icon}`
-  }));
+  })));
+}
+
+export async function get_item_gathering_level(gathering_item_id: number): Promise<number> {
+  let key = `glvl_for/${gathering_item_id}`;
+  let cached = localStorage.getItem(key);
+  let glvl = null;
+  if (cached) {
+    cached = cached!;
+    glvl = parseInt(cached);
+  }
+  else {
+    // Request info from xivapi 
+    let resp = await fetch(`${XIVAPI_BASE}/GatheringItem/${gathering_item_id}`);
+    let body = await resp.json();
+    // Extract values
+    glvl = body.GatheringItemLevelTargetID;
+    // Cache them
+    let entry = `${glvl}`;
+    localStorage.setItem(key, entry);
+  }
+  return glvl; 
 }

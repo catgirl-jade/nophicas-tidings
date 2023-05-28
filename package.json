@@ -5,7 +5,7 @@
   "main": "ts/index.ts",
   "scripts": {
     "build": "webpack --config webpack.config.ts",
-    "dev-server": "webpack-dev-server --mode=development"
+    "dev-server": "webpack-dev-server --mode=development --port=8000"
   },
   "repository": {
     "type": "git",

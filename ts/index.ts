@@ -54,7 +54,6 @@ const input_item_boon_chance = <HTMLInputElement> document.querySelector("input#
 const input_item_boon_chance_bonus= <HTMLInputElement> document.querySelector("input#item_boon_chance_bonus")!;
 const input_item_boon_chance_total = <HTMLInputElement> document.querySelector("input#item_boon_chance_total")!;
 /// Amount granted by bountiful yield
-const div_bountiful_bonus = <HTMLLabelElement> document.querySelector("div#div_bountiful_bonus")!;
 const input_item_bountiful_bonus = <HTMLInputElement> document.querySelector("input#item_bountiful_bonus")!;
 /// Button to perform simulation
 const input_submit = <HTMLInputElement> document.querySelector("input#submit")!;
@@ -315,7 +314,7 @@ function update_from_gathering(ev: Event | null) {
   // input_item_success_chance.value = success_rate.toString();
   // mark_validity(label_success_chance, true);
   input_item_bountiful_bonus.value = bountiful_bonus.toString();
-  mark_validity(div_bountiful_bonus, true);
+  mark_validity(input_item_bountiful_bonus, true);
 }
 // Set the callback
 input_player_gathering.addEventListener("change", update_from_gathering);

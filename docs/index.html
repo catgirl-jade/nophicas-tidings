@@ -93,10 +93,10 @@
             min=0
             max=10
             size=1
-            title="Number of items granted by Gatherer's Boon"
-            aria-describedby="span_durability_suffix"
+            title="Number of items granted by Gatherer's Boon. As far as I know this is always 1 but they could change it."
+            aria-describedby="span_boon_items_suffix"
           />
-          <span class="input-group-text" id="span_durability_suffix">%</span>
+          <span class="input-group-text" id="span_boon_items_suffix">items</span>
         </div>
         <h4>Item</h4>
         <div class="input-group mb-3">
@@ -125,25 +125,25 @@
           </button>
           <div class="form-floating">
             <input
-              class="form-control"
+              class="form-control text-white"
               id="item_gathering"
               min=0
               size=4
               title="Your gathering stat"
               disabled readonly
             />
-            <label for="item_gathering">Gathering</label>
+            <label for="item_gathering" class="text-white">Gathering</label>
           </div>
           <div class="form-floating">
             <input
-              class="form-control"
+              class="form-control text-white"
               id="item_perception"
               min=0
               size=4
               title="Your perception stat"
               disabled readonly
             />
-            <label for="item_perception">Perception</label>
+            <label for="item_perception" class="text-white">Perception</label>
           </div>
         </div>
         <div class="input-group mb-3">
@@ -179,7 +179,7 @@
         <div class="input-group mb-3" id="div_boon_chance">
           <div class="form-floating">
             <input
-              class="form-control"
+              class="form-control text-white"
               id="item_boon_chance"
               type="number"
               value=100
@@ -188,7 +188,7 @@
               size=3
               title="Chance of triggering Gatherer's Boon"
             />
-            <label for="item_boon_chance">Boon Chance</label>
+            <label for="item_boon_chance" class="text-white">Boon Chance</label>
           </div>
           <span class="input-group-text">+</span>
           <div class="form-floating">
@@ -223,7 +223,7 @@
         </div>
         <div class="form-floating" id="div_bountiful_bonus">
           <input
-            class="form-control"
+            class="form-control text-white"
             id="item_bountiful_bonus"
             type="number"
             value=0
@@ -232,7 +232,7 @@
             size=3
             title="How many items you earn for using Bountiful Yield/Harvest II"
           />
-          <label for="item_bountiful_bonus">Bountiful Bonus</label>
+          <label for="item_bountiful_bonus" class="text-white">Bountiful Bonus</label>
         </div>
         <input id="submit" class="btn btn-primary btn-lg btn-block" type="submit" value="Simulate">
       </form>

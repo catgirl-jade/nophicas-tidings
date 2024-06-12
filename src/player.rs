@@ -8,7 +8,7 @@
 //
 // You should have received a copy of the GNU General Public License along with nophicas-tidings. If not, see <https://www.gnu.org/licenses/>.
 
-use crate::dol::collectible::{Item, State as CollectibleState};
+use crate::dol::collectible::{Item as CollectibleItem, State as CollectibleState};
 use crate::dol::{self, GatherState, Node};
 
 #[derive(Clone, Debug, PartialEq)]
@@ -33,7 +33,7 @@ impl Player {
     pub fn gather(&self, node: &Node, item: &dol::Item) -> GatherState {
         GatherState::new(self, node, item)
     }
-    pub fn gather_collectible(&self, item: &Item, node: &Node) -> CollectibleState {
+    pub fn gather_collectible(&self, node: &Node, item: &CollectibleItem) -> CollectibleState {
         CollectibleState::new(self, item, node)
     }
     pub fn gp_per_gather(&self) -> u8 {

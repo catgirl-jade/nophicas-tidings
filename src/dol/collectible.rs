@@ -67,6 +67,7 @@ impl State {
             next_state: None,
         }
     }
+    pub fn best_rotation(&self) {}
     fn gathering_score(&self) -> u16 {
         Self::score(self.player.gathering, self.item.gathering)
     }
@@ -408,26 +409,30 @@ enum Action {
     SolidReasonAgelessWords,
     Collect,
     Scour,
-    Brazen,
+    Brazen { amount: u16 },
     Meticulous,
     Scrutiny,
     CollectorsFocus,
     WiseToTheWorld,
 }
 lazy_static! {
-    static ref ACTIONS_GP_ASCENDING: [Action; 8] = {
-        let mut actions = Action::ALL;
+    static ref ACTIONS_GP_ASCENDING: [Action; 108] = {
+        let mut actions = [Action::Scour; 108];
+        actions[..7].copy_from_slice(&Action::ALL);
+        for i in 50u16..=150 {
+            actions[(i - 50) as usize + 7] = Action::Brazen { amount: i };
+        }
         actions.sort_by_key(|act| act.gp());
         actions
     };
 }
 
 impl Action {
-    const ALL: [Action; 8] = [
+    const ALL: [Action; 7] = [
         Action::SolidReasonAgelessWords,
         Action::Collect,
         Action::Scour,
-        Action::Brazen,
+        // Brazen is generated
         Action::Meticulous,
         Action::Scrutiny,
         Action::CollectorsFocus,

@@ -25,6 +25,8 @@ jobs:
         npm install
         npm run build
     - uses: actions/checkout@v4
+      with:
+        clean: false
     - name: Commit built website
       run: |
         git config user.name "github-actions[bot]"

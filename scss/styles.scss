@@ -52,3 +52,8 @@ div.search-row > img {
   width: 32px;
   height: 32px;
 }
+
+// Remove ugly background on floating labels
+.form-floating > label::after {
+    background-color: transparent !important;
+}

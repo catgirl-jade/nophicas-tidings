@@ -155,7 +155,8 @@ async function display_result(result: any) {
       }
     }
   }
-
+  // Track items so far
+  let items_so_far = 0;
   // Store a mapping of img element -> icon so we know where to set them
   // Create a div for each element of the rotation
   for (let action of result.actions) {
@@ -168,10 +169,18 @@ async function display_result(result: any) {
     div_items.classList.add("col-sm-1");
     div_items.classList.add("align-items-center");
     div_items.classList.add("action-quantity");
+    // The number of items gathered (cumulative)
+    const div_items_cum = document.createElement("div");
+    div_items_cum.classList.add("col-sm-1");
+    div_items_cum.classList.add("align-items-center");
+    div_items_cum.classList.add("action-quantity");
     if (action.action.hasOwnProperty("amount")) {
       div_items.innerText = `${action.action.amount}`
+      items_so_far += parseFloat(action.action.amount);
+      div_items_cum.innerText = `${items_so_far.toFixed(2)}`
     }
     div_action.appendChild(div_items);
+    div_action.appendChild(div_items_cum);
     // The icons for the ability
     const div_icons = document.createElement("div");
     div_icons.classList.add("col-sm-auto");

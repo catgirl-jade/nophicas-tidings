@@ -1,0 +1,33 @@
+name: NodeJS + Webpack build
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [ 20.x ]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+    - name: Build
+      run: |
+        npm run build
+    - name: Commit
+      run: |
+        git config --global user.name 'JadeBot'
+        git config --global user.email 'catgirl-jade@users.noreply.github.com'
+        git remote set-url --push origin https://catgirl-jade:$GITHUB_TOKEN@github.com/${{ github.repository }}
+        git commit -am "Build webpage"
+        git push

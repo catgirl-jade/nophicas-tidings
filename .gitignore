@@ -3,5 +3,6 @@
 # JS/TS
 /node_modules
 /pkg
+/docs
 # Vim
 **/.*.sw*

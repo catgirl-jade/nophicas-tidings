@@ -453,6 +453,7 @@ impl Serialize for GatherAction {
     }
 }
 #[derive(Clone, Copy, Debug, PartialEq)]
+#[allow(clippy::upper_case_acronyms)]
 enum SVFMRank {
     I,
     II,

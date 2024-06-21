@@ -186,7 +186,7 @@ impl GatherState {
                 let success_chance = if self.clear_vision_flora_mastery_active {
                     // Consume CVFM
                     self.clear_vision_flora_mastery_active = false;
-                    self.success_chance + Frac::new(15u64, 100u64)
+                    (self.success_chance + Frac::new(15u64, 100u64)).max(Frac::from(1u64))
                 } else {
                     self.success_chance
                 };

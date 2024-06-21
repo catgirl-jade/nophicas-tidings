@@ -38,8 +38,8 @@ impl Player {
     }
     pub fn gp_per_gather(&self) -> u8 {
         match self.level {
-            80.. => 6,
-            _ => 5,
+            0..=69 => 5,
+            70.. => 6,
         }
     }
 }

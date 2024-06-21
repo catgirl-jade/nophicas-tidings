@@ -257,17 +257,29 @@ impl GatherState {
             SVFMRank::II => 1,
             SVFMRank::III => 2,
         };
+        // If already used, return error
         if self.sharp_vision_field_mastery_used[idx] {
             return Err(GatherError::SVFMAlreadyUsed(*rank));
         }
+        // If success chance is 0, return error
         if self.success_chance == Frac::from(0) {
             return Err(GatherError::SVFMCVFMUsedAtZero);
         }
-        if let Some(prev_rank) = rank.previous_tier() {
+        // If CVFM was used, error out
+        // The logic here is that the same sequence with SVFM before CVFM will
+        // get checked anyway and it saves us a lot of grief
+        if self.clear_vision_flora_mastery_active {
+            return Err(GatherError::SVFMWasted);
+        }
+        // Check the previous rank tier. If we can hit max success
+        // with prev rank, don't consider this one
+        // TODO: fix this optimization to check everything. current it doesnt
+        // check whether the prev rank is already active
+        /*if let Some(prev_rank) = rank.previous_tier() {
             if self.success_chance + prev_rank.gather_chance_bonus() >= Frac::from(1) {
                 return Err(GatherError::SVFMWasted);
             }
-        }
+        }*/
         // Cap the chance at 100%
         self.success_chance = (self.success_chance + rank.gather_chance_bonus()).min(Frac::from(1));
         // Mark it used

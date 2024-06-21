@@ -311,8 +311,13 @@ impl GatherState {
             return Err(GatherError::SVFMCVFMUsedAtZero);
         }
         // If success chance is 1, this is completely useless
-        if self.success_chance >= Frac::from(1u64) {
+        else if self.success_chance == Frac::from(1u64) {
             return Err(GatherError::CVFMUsedAtMax);
+        }
+        // If success chance is >95%, this is completely useless
+        // This is because SVFM1 grants 5% and costs the same gp
+        else if self.success_chance >= Frac::new(95u64, 100u64) {
+            return Err(GatherError::CVFMWasted);
         }
         self.clear_vision_flora_mastery_active = true;
         Ok(())

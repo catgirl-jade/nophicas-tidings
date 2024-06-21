@@ -313,14 +313,34 @@ input_gathering_level.onchange = update_from_gathering_level;
 // Call it once for the first time so we have initial values
 await update_from_gathering_level(null);
 
+// Updates variables that are based on player level
+function update_from_level(ev: Event | null) {
+  // Read both gathering scores
+  let player_gathering = parseInt(input_player_gathering.value);
+  let item_gathering = parseInt(input_item_gathering.value);
+  // Read player level
+  let player_level = parseInt(input_player_level.value);
+  // Calculate success rate and bountiful bonus
+  let bountiful_bonus = nophicas_tidings.bountiful_amount(player_level, player_gathering, item_gathering);
+  input_item_bountiful_bonus.value = bountiful_bonus.toString();
+  mark_validity(input_item_bountiful_bonus, true);
+}
+// Set the callback
+input_player_level.addEventListener("change", update_from_level);
+// Call it once
+update_from_level(null);
+
+
 // Updates variables that are based on player gathering score
 function update_from_gathering(ev: Event | null) {
   // Read both gathering scores
   let player_gathering = parseInt(input_player_gathering.value);
   let item_gathering = parseInt(input_item_gathering.value);
+  // Read player level
+  let player_level = parseInt(input_player_level.value);
   // Calculate success rate and bountiful bonus
   let success_rate = nophicas_tidings.success_chance(player_gathering, item_gathering);
-  let bountiful_bonus = nophicas_tidings.bountiful_amount(player_gathering, item_gathering);
+  let bountiful_bonus = nophicas_tidings.bountiful_amount(player_level, player_gathering, item_gathering);
   // TODO: unremove once we have the algo right
   // input_item_success_chance.value = success_rate.toString();
   // mark_validity(label_success_chance, true);

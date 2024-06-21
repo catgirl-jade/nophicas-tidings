@@ -66,6 +66,8 @@ pub struct GatherState {
     sharp_vision_field_mastery_used: [bool; 3],
     /// Whether gift 1 and 2 were used
     gift_used: [bool; 2],
+    /// Whether clear vision/flora mastery is active
+    clear_vision_flora_mastery_active: bool,
     /// Whether tidings was used
     tidings: bool,
     /// Whether bountiful X was used
@@ -95,6 +97,7 @@ impl GatherState {
             blessed_king_bonus: 0,
             sharp_vision_field_mastery_used: [false; 3],
             gift_used: [false; 2],
+            clear_vision_flora_mastery_active: false,
             tidings: false,
             bountiful_chance: Frac::from(0),
             eureka_moment: false,
@@ -129,6 +132,13 @@ impl GatherState {
             Ok(())
         }
     }
+    fn check_level(&mut self, action: &GatherAction) -> Result<(), GatherError> {
+        if self.player.level < action.required_level() {
+            Err(GatherError::NotUnlocked)
+        } else {
+            Ok(())
+        }
+    }
     fn action(&mut self, mut action: GatherAction) -> Result<(), GatherError> {
         // Node is dead
         if self.remaining_attempts == 0 {
@@ -140,6 +150,8 @@ impl GatherState {
         use GatherAction::*;
         // Every action spends GP
         self.spend_gp(&action)?;
+        // Every action has a required level
+        self.check_level(&action)?;
         // Perform some checks if the action is a buff
         if matches!(
             action,
@@ -152,35 +164,11 @@ impl GatherState {
         match &mut action {
             SharpVisionFieldMastery(rank) => self.sharp_vision_field_mastery(&*rank)?,
             Gift(rank) => self.gift(&*rank)?,
+            ClearVisionFloraMastery => self.clear_vision_flora_mastery()?,
             BlessedKing(rank) => self.blessed_king(&*rank)?,
-            SolidReasonAgelessWords => {
-                // Add the attempt (Don't allow wasting)
-                if self.remaining_attempts < self.node.max_attempts {
-                    self.remaining_attempts += 1;
-                } else {
-                    return Err(GatherError::DurabilityOvercapped);
-                }
-                // If we have a eureka moment already, we must use
-                // wise to the world, or risk wasting it
-                if self.eureka_moment {
-                    self.action(WiseToTheWorld)?;
-                }
-                // Grant a potential eureka moment
-                self.eureka_moment = true;
-            }
-            Bountiful => {
-                if self.bountiful_chance > Frac::from(0) {
-                    return Err(GatherError::BuffAlreadyApplied);
-                }
-                self.bountiful_chance = Frac::from(1);
-            }
-            Tidings => {
-                if self.tidings {
-                    return Err(GatherError::BuffAlreadyApplied);
-                }
-                self.item.boon_amount += 1;
-                self.tidings = true;
-            }
+            SolidReasonAgelessWords => self.solid_reason_ageless_words()?,
+            Bountiful => self.bountiful()?,
+            Tidings => self.tidings()?,
             WiseToTheWorld => {
                 if !self.eureka_moment {
                     return Err(GatherError::NoEurekaMoment);
@@ -194,12 +182,20 @@ impl GatherState {
                 self.eureka_moment = false;
             }
             Gather { ref mut amount } => {
+                // Calculate success chance if clear vision is applied
+                let success_chance = if self.clear_vision_flora_mastery_active {
+                    // Consume CVFM
+                    self.clear_vision_flora_mastery_active = false;
+                    self.success_chance + Frac::new(15u64, 100u64)
+                } else {
+                    self.success_chance
+                };
                 // This is the chance the gather happens at all (if wise to the world was used,
                 // this gather is in limbo)
                 let mut base_gather_chance = if self.wise_to_the_world {
-                    self.success_chance / 2
+                    success_chance / 2
                 } else {
-                    self.success_chance
+                    success_chance
                 };
                 // Weight the branch according to how many additional eureka hits are required to
                 // even be here
@@ -265,7 +261,7 @@ impl GatherState {
             return Err(GatherError::SVFMAlreadyUsed(*rank));
         }
         if self.success_chance == Frac::from(0) {
-            return Err(GatherError::SVFMUsedAtZero);
+            return Err(GatherError::SVFMCVFMUsedAtZero);
         }
         if let Some(prev_rank) = rank.previous_tier() {
             if self.success_chance + prev_rank.gather_chance_bonus() >= Frac::from(1) {
@@ -305,7 +301,58 @@ impl GatherState {
             }
         }
     }
+    fn clear_vision_flora_mastery(&mut self) -> Result<(), GatherError> {
+        // If already used, fail
+        if self.clear_vision_flora_mastery_active {
+            return Err(GatherError::CVFMWasted);
+        }
+        // If success chance is 0, this does not apply
+        if self.success_chance == Frac::from(0u64) {
+            return Err(GatherError::SVFMCVFMUsedAtZero);
+        }
+        // If success chance is 1, this is completely useless
+        if self.success_chance >= Frac::from(1u64) {
+            return Err(GatherError::CVFMUsedAtMax);
+        }
+        self.clear_vision_flora_mastery_active = true;
+        Ok(())
+    }
+    fn bountiful(&mut self) -> Result<(), GatherError> {
+        if self.bountiful_chance > Frac::from(0) {
+            return Err(GatherError::BuffAlreadyApplied);
+        }
+        self.bountiful_chance = Frac::from(1);
+        Ok(())
+    }
+    fn tidings(&mut self) -> Result<(), GatherError> {
+        if self.tidings {
+            return Err(GatherError::BuffAlreadyApplied);
+        }
+        self.item.boon_amount += 1;
+        self.tidings = true;
+        Ok(())
+    }
+    fn solid_reason_ageless_words(&mut self) -> Result<(), GatherError> {
+        // Add the attempt (Don't allow wasting)
+        if self.remaining_attempts < self.node.max_attempts {
+            self.remaining_attempts += 1;
+        } else {
+            return Err(GatherError::DurabilityOvercapped);
+        }
+        // Handle eureka moments
+        if self.player.level >= 90 {
+            // If we have a eureka moment already, we must use
+            // wise to the world, or risk wasting it
+            if self.eureka_moment {
+                self.action(GatherAction::WiseToTheWorld)?;
+            }
+            // Grant a potential eureka moment
+            self.eureka_moment = true;
+        }
+        Ok(())
+    }
     fn blessed_king(&mut self, rank: &BlessedKingRank) -> Result<(), GatherError> {
+        // Calculate bonus
         let bonus = rank.item_bonus();
         if self.blessed_king_bonus > 0 {
             return Err(GatherError::BuffAlreadyApplied);
@@ -393,6 +440,7 @@ pub struct ActionLog {
 enum GatherAction {
     SharpVisionFieldMastery(SVFMRank),
     Gift(GiftRank),
+    ClearVisionFloraMastery,
     Bountiful,
     SolidReasonAgelessWords,
     BlessedKing(BlessedKingRank),
@@ -406,8 +454,9 @@ impl fmt::Display for GatherAction {
         match self {
             SharpVisionFieldMastery(rank) => write!(f, "Sharp Vision/Field Mastery {rank}"),
             Gift(rank) => write!(f, "Pioneer/Mountaineer's Gift {rank}"),
+            ClearVisionFloraMastery => f.write_str("Flora Mastery/Clear Vision"),
             Bountiful => f.write_str("Bountiful Harvest/Yield I/II"),
-            SolidReasonAgelessWords => f.write_str("Solid Reason/Ageless Words"),
+            SolidReasonAgelessWords => f.write_str("Ageless Words/Solid Reason"),
             BlessedKing(rank) => write!(f, "King's Yield/Blessed Harvest {rank}"),
             Tidings => f.write_str("Nald'thal/Nophica's Tidings"),
             WiseToTheWorld => f.write_str("Wise to the World"),
@@ -486,6 +535,14 @@ impl SVFMRank {
             III => Some(II),
         }
     }
+    fn required_level(&self) -> u8 {
+        use SVFMRank::*;
+        match self {
+            I => 4,
+            II => 5,
+            III => 10,
+        }
+    }
     fn gather_chance_bonus(&self) -> Frac {
         use SVFMRank::*;
         match self {
@@ -529,6 +586,13 @@ impl GiftRank {
             II => Frac::new(3u8, 10u8),
         }
     }
+    fn required_level(&self) -> u8 {
+        use GiftRank::*;
+        match self {
+            I => 15,
+            II => 50,
+        }
+    }
 }
 #[derive(Clone, Copy, Debug, PartialEq)]
 enum BlessedKingRank {
@@ -559,15 +623,23 @@ impl BlessedKingRank {
             II => 2,
         }
     }
+    fn required_level(&self) -> u8 {
+        use BlessedKingRank::*;
+        match self {
+            I => 30,
+            II => 40,
+        }
+    }
 }
 
 impl GatherAction {
-    const ALL: [Self; 12] = [
+    const ALL: [Self; 13] = [
         GatherAction::SharpVisionFieldMastery(SVFMRank::I),
         GatherAction::SharpVisionFieldMastery(SVFMRank::II),
         GatherAction::SharpVisionFieldMastery(SVFMRank::III),
         GatherAction::Gift(GiftRank::I),
         GatherAction::Gift(GiftRank::II),
+        GatherAction::ClearVisionFloraMastery,
         GatherAction::Bountiful,
         GatherAction::SolidReasonAgelessWords,
         GatherAction::BlessedKing(BlessedKingRank::I),
@@ -584,6 +656,7 @@ impl GatherAction {
         match self {
             SharpVisionFieldMastery(rank) => rank.gp(),
             Gift(rank) => rank.gp(),
+            ClearVisionFloraMastery => 50,
             Bountiful => 100,
             SolidReasonAgelessWords => 300,
             BlessedKing(rank) => rank.gp(),
@@ -598,6 +671,7 @@ impl GatherAction {
             SharpVisionFieldMastery(SVFMRank::I) => 235,
             SharpVisionFieldMastery(SVFMRank::II) => 237,
             SharpVisionFieldMastery(SVFMRank::III) => 295,
+            ClearVisionFloraMastery => 4072,
             Gift(GiftRank::I) => 21177,
             Gift(GiftRank::II) => 25589,
             Bountiful => 272, // Also 4073 for I,
@@ -615,6 +689,7 @@ impl GatherAction {
             SharpVisionFieldMastery(SVFMRank::I) => 218,
             SharpVisionFieldMastery(SVFMRank::II) => 220,
             SharpVisionFieldMastery(SVFMRank::III) => 294,
+            ClearVisionFloraMastery => 4086,
             Gift(GiftRank::I) => 21178,
             Gift(GiftRank::II) => 25590,
             Bountiful => 272, // Also 4087 for I,
@@ -626,9 +701,23 @@ impl GatherAction {
             Gather { .. } => 815,
         }
     }
+    fn required_level(&self) -> u8 {
+        use GatherAction::*;
+        match self {
+            Gather { .. } => 1,
+            SharpVisionFieldMastery(rank) => rank.required_level(),
+            Gift(rank) => rank.required_level(),
+            ClearVisionFloraMastery => 23,
+            Bountiful => 24,
+            SolidReasonAgelessWords => 25,
+            BlessedKing(rank) => rank.required_level(),
+            Tidings => 81,
+            WiseToTheWorld => 90,
+        }
+    }
 }
 lazy_static! {
-    static ref ACTIONS_GP_ASCENDING: [GatherAction; 12] = {
+    static ref ACTIONS_GP_ASCENDING: [GatherAction; 13] = {
         let mut actions = GatherAction::ALL;
         actions.sort_by_key(|act| act.gp());
         actions
@@ -649,6 +738,8 @@ enum GatherError {
     NodeExhausted,
     #[error("GP has been exhausted")]
     NotEnoughGP,
+    #[error("Not high enough level, or ability has not been unlocked")]
+    NotUnlocked,
     #[error("Used buff after a gather, which means a gather did not benefit from the buff")]
     BuffUsedAfterGather,
     #[error("Tried to use Wise to the World without a Eureka Moment proc")]
@@ -665,8 +756,12 @@ enum GatherError {
     SVFMWasted,
     #[error("Sharp Vision/Field Mastery {0} used when it has already been applied")]
     SVFMAlreadyUsed(SVFMRank),
-    #[error("Sharp Vision/Field Mastery used when chance is zero, does nothing")]
-    SVFMUsedAtZero,
+    #[error("Sharp Vision/Field Mastery/Clear Vision/Flora Mastery used when chance is zero, does nothing")]
+    SVFMCVFMUsedAtZero,
+    #[error("Clear Vision/Flora Mastery used at max gather chance")]
+    CVFMUsedAtMax,
+    #[error("Clear Vision/Flora Mastery wasted used when it has already been applied")]
+    CVFMWasted,
 }
 fn frac_to_string(f: Frac) -> String {
     fraction::division::divide_to_string(*f.numer().unwrap(), *f.denom().unwrap(), 8, false)

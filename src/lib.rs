@@ -39,7 +39,7 @@ pub fn generate_rotation(
     bountiful_bonus: u8,
 ) -> Result<JsValue, JsValue> {
     // Initialize player settings
-    let player = Player {
+    let mut player = Player {
         level,
         gathering: 0,
         perception: 0,
@@ -66,7 +66,8 @@ pub fn generate_rotation(
         let rotation_revisit = if gp_current == gp_max {
             rotation.clone() * revisit_chance
         } else {
-            // Create a new state with a new base chance
+            // Create a new state with a new base chance and full GP
+            player.gp = player.gp_max;
             let state_revisit = player.gather(&node, &params, Some(revisit_chance));
             state_revisit.best_rotation()
         };

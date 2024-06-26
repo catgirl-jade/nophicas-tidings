@@ -29,6 +29,7 @@ const form_params = <HTMLFormElement> document.querySelector("form#parameters")!
 const input_player_level = <HTMLInputElement> document.querySelector("input#player_level")!;
 /// GP 
 const input_player_gp = <HTMLInputElement> document.querySelector("input#player_gp")!;
+const input_player_gp_max = <HTMLInputElement> document.querySelector("input#player_gp_max")!;
 /// Gathering 
 const input_player_gathering = <HTMLInputElement> document.querySelector("input#player_gathering")!;
 /// Perception
@@ -36,6 +37,8 @@ const input_player_perception = <HTMLInputElement> document.querySelector("input
 // Node stats
 /// Durability 
 const input_node_durability = <HTMLInputElement> document.querySelector("input#node_durability")!;
+// Revisit chance
+const input_node_revisit_chance = <HTMLInputElement> document.querySelector("input#node_revisit_chance")!;
 // Item stats
 // Item level
 const input_gathering_level = <HTMLInputElement> document.querySelector("input#gathering_level")!;
@@ -101,6 +104,7 @@ function load_and_set_save_callback(input: HTMLInputElement, key: string) {
 }
 load_and_set_save_callback(input_player_level, "level");
 load_and_set_save_callback(input_player_gp, "gp");
+load_and_set_save_callback(input_player_gp_max, "gp_max");
 load_and_set_save_callback(input_player_gathering, "gathering");
 load_and_set_save_callback(input_player_perception, "perception");
 
@@ -108,7 +112,9 @@ load_and_set_save_callback(input_player_perception, "perception");
 async function do_calculations(
   player_level: number,
   player_gp: number,
+  player_gp_max: number,
   node_durability: number,
+  node_revisit_chance: number,
   item_success_chance: number,
   item_gather_amount: number,
   item_boon_chance: number,
@@ -117,7 +123,9 @@ async function do_calculations(
   return nophicas_tidings.generate_rotation(
     player_level,
     player_gp,
+    player_gp_max,
     node_durability,
+    node_revisit_chance,
     item_success_chance,
     item_gather_amount,
     item_boon_chance,
@@ -161,49 +169,65 @@ async function display_result(result: any) {
   let items_so_far = 0;
   // Store a mapping of img element -> icon so we know where to set them
   // Create a div for each element of the rotation
-  for (let action of result.actions) {
-    // Div storing all the info for an action stage
-    const div_action = document.createElement("div");
-    div_action.classList.add("row");
-    div_action.classList.add("action-row");
-    // The number of items gathered
-    const div_items = document.createElement("div");
-    div_items.classList.add("col-sm-1");
-    div_items.classList.add("align-items-center");
-    div_items.classList.add("action-quantity");
-    // The number of items gathered (cumulative)
-    const div_items_cum = document.createElement("div");
-    div_items_cum.classList.add("col-sm-1");
-    div_items_cum.classList.add("align-items-center");
-    div_items_cum.classList.add("action-quantity");
-    if (action.action.hasOwnProperty("amount")) {
-      div_items.innerText = `${action.action.amount}`
-      items_so_far += parseFloat(action.action.amount);
-      div_items_cum.innerText = `${items_so_far.toFixed(2)}`
+  for (let action_log of result.actions) {
+    if (action_log.hasOwnProperty('Action')) {
+      let action = action_log.Action;
+      // Div storing all the info for an action stage
+      const div_action = document.createElement("div");
+      div_action.classList.add("row");
+      div_action.classList.add("action-row");
+      // The number of items gathered
+      const div_items = document.createElement("div");
+      div_items.classList.add("col-sm-1");
+      div_items.classList.add("align-items-center");
+      div_items.classList.add("action-quantity");
+      // The number of items gathered (cumulative)
+      const div_items_cum = document.createElement("div");
+      div_items_cum.classList.add("col-sm-1");
+      div_items_cum.classList.add("align-items-center");
+      div_items_cum.classList.add("action-quantity");
+      if (action.action.hasOwnProperty("amount")) {
+        div_items.innerText = `${action.action.amount}`
+        items_so_far += parseFloat(action.action.amount);
+        div_items_cum.innerText = `${items_so_far.toFixed(2)}`
+      }
+      div_action.appendChild(div_items);
+      div_action.appendChild(div_items_cum);
+      // The icons for the ability
+      const div_icons = document.createElement("div");
+      div_icons.classList.add("col-sm-auto");
+      div_icons.classList.add("action-icons");
+      const img_min = document.createElement("img");
+      div_icons.appendChild(img_min);
+      const img_btn= document.createElement("img");
+      div_icons.appendChild(img_btn);
+      div_action.appendChild(div_icons);
+      // The name of the ability
+      const div_name = document.createElement("div");
+      div_name.classList.add("col");
+      div_name.classList.add("action_name");
+      div_name.innerText = action.action.name;
+      div_action.appendChild(div_name);
+      // Whether the ability depends on casts of Wise to the World
+      // Finally, store the row into the action list 
+      div_result.appendChild(div_action);
+      // Finally, store some references for the icons
+      update_icon_list(action.action.id_min, img_min);  
+      update_icon_list(action.action.id_btn, img_btn);
     }
-    div_action.appendChild(div_items);
-    div_action.appendChild(div_items_cum);
-    // The icons for the ability
-    const div_icons = document.createElement("div");
-    div_icons.classList.add("col-sm-auto");
-    div_icons.classList.add("action-icons");
-    const img_min = document.createElement("img");
-    div_icons.appendChild(img_min);
-    const img_btn= document.createElement("img");
-    div_icons.appendChild(img_btn);
-    div_action.appendChild(div_icons);
-    // The name of the ability
-    const div_name = document.createElement("div");
-    div_name.classList.add("col");
-    div_name.classList.add("action_name");
-    div_name.innerText = action.action.name;
-    div_action.appendChild(div_name);
-    // Whether the ability depends on casts of Wise to the World
-    // Finally, store the row into the action list 
-    div_result.appendChild(div_action);
-    // Finally, store some references for the icons
-    update_icon_list(action.action.id_min, img_min);  
-    update_icon_list(action.action.id_btn, img_btn); 
+    else {
+      // Create a row signifying a revisit
+      let div_revisit_row = document.createElement("div");
+      div_revisit_row.classList.add("row");
+      div_revisit_row.classList.add("action-row");
+      // Add message
+      let div_revisit_message = document.createElement("div");
+      div_revisit_message.classList.add("align-items-center");
+      div_revisit_message.innerText = "Revisit";
+      div_revisit_row.appendChild(div_revisit_message);
+      // Append the revisit
+      div_result.appendChild(div_revisit_row);
+    }
   }
   // Finally, we want to request icons
   find_icons(action_icons.keys());
@@ -220,6 +244,7 @@ function set_form_disabled(value: boolean) {
   input_submit.disabled = value;
   input_player_level.disabled = value;
   input_player_gp.disabled = value;
+  input_player_gp_max.disabled = value;
   input_player_gathering.disabled = value;
   input_player_perception.disabled = value;
   input_node_durability.disabled = value;
@@ -227,8 +252,60 @@ function set_form_disabled(value: boolean) {
   input_item_success_chance.disabled = value;
   input_item_gather_amount.disabled = value;
   input_item_boon_chance.disabled = value;
+  input_item_boon_chance_bonus.disabled = value;
   input_item_bountiful_bonus.disabled = value;
 }
+
+async function calculate_rotation_then(
+  player_level: number,
+  player_gp: number,
+  player_gp_max: number,
+  node_durability: number,
+  node_revisit_chance: number,
+  item_success_chance: number,
+  item_gather_amount: number,
+  item_boon_chance: number,
+  item_bountiful_bonus: number,
+  after: (_: any) => void
+) {
+  if (worker) {
+    // Aggregate all the data together into an object
+    let data = {
+      player_level,
+      player_gp,
+      player_gp_max,
+      node_durability,
+      node_revisit_chance,
+      item_success_chance,
+      item_gather_amount,
+      item_boon_chance,
+      item_bountiful_bonus
+    };
+    // Set up the response callback beforehand
+    worker.onmessage = async (evt: MessageEvent) => {
+      let result: any = evt.data;
+      console.debug("Got response from worker");
+      await after(result);
+    };
+    // Send the data to the worker
+    await worker.postMessage(data);
+  }
+  else {
+    let result: any = await do_calculations(
+      player_level,
+      player_gp,
+      player_gp_max,
+      node_durability,
+      node_revisit_chance,
+      item_success_chance,
+      item_gather_amount,
+      item_boon_chance,
+      item_bountiful_bonus,
+    );
+    await after(result);
+  }
+} 
+
 /// Performs and writes calculations
 async function start_calculations() {
   // Disable all fields from being written
@@ -236,7 +313,9 @@ async function start_calculations() {
   // Read all the fields
   let player_level = parseInt(input_player_level.value);
   let player_gp = parseInt(input_player_gp.value);
+  let player_gp_max = parseInt(input_player_gp_max.value);
   let node_durability = parseInt(input_node_durability.value);
+  let node_revisit_chance = parseInt(input_node_revisit_chance.value);
   let item_success_chance = parseInt(input_item_success_chance.value);
   let item_gather_amount = parseInt(input_item_gather_amount.value);
   let item_boon_chance = parseInt(input_item_boon_chance_total.value);
@@ -249,38 +328,19 @@ async function start_calculations() {
   });
   // Turn on the calculating message
   div_calc_message.style.display = "inline";
-  if (worker) {
-    // Aggregate all the data together into an object
-    let data = {
+  // Perform and display the calculations
+  calculate_rotation_then(
       player_level,
       player_gp,
+      player_gp_max,
       node_durability,
-      item_success_chance,
-      item_gather_amount,
-      item_boon_chance,
-      item_bountiful_bonus
-    };
-    // Set up the response callback beforehand
-    worker.onmessage = async (evt: MessageEvent) => {
-      let result: any = evt.data;
-      console.debug("Got response from worker");
-      await display_result(result);
-    };
-    // Send the data to the worker
-    await worker.postMessage(data);
-  }
-  else {
-    let result: any = await do_calculations(
-      player_level,
-      player_gp,
-      node_durability,
+      node_revisit_chance,
       item_success_chance,
       item_gather_amount,
       item_boon_chance,
       item_bountiful_bonus,
-    );
-    display_result(result);
-  }
+    display_result
+  );
 }
 
 // On submission, the form will perform calculation 

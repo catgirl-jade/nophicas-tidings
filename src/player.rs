@@ -10,13 +10,15 @@
 
 use crate::dol::collectible::{Item as CollectibleItem, State as CollectibleState};
 use crate::dol::{self, GatherState, Node};
+use fraction::Fraction as Frac;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Player {
     pub level: u8,
     pub gathering: u16,
     pub perception: u16,
-    pub max_gp: u16,
+    pub gp: u16,
+    pub gp_max: u16,
 }
 
 impl Default for Player {
@@ -25,13 +27,14 @@ impl Default for Player {
             level: 90,
             gathering: 3712,
             perception: 3677,
-            max_gp: 900,
+            gp: 900,
+            gp_max: 900,
         }
     }
 }
 impl Player {
-    pub fn gather(&self, node: &Node, item: &dol::Item) -> GatherState {
-        GatherState::new(self, node, item)
+    pub fn gather(&self, node: &Node, item: &dol::Item, base_chance: Option<Frac>) -> GatherState {
+        GatherState::new(self, node, item, base_chance)
     }
     pub fn gather_collectible(&self, node: &Node, item: &CollectibleItem) -> CollectibleState {
         CollectibleState::new(self, item, node)

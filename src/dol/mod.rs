@@ -14,6 +14,7 @@ use fraction::Fraction as Frac;
 use lazy_static::lazy_static;
 use serde::Serialize;
 use std::fmt;
+use std::ops::{AddAssign, Mul};
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Item {
@@ -51,7 +52,9 @@ pub struct GatherState {
     node: Node,
     // Parameters during gathering
     /// Remaining gp
-    gp: u16,
+    pub gp: u16,
+    /// Base chance (e.g. some percentage chance of whether this is a revisit)
+    base_chance: Frac,
     /// Success chance
     success_chance: Frac,
     /// How many previous hits were based on eureka momentseureka moments
@@ -84,11 +87,12 @@ pub struct GatherState {
     actions_so_far: Vec<ActionLog>,
 }
 impl GatherState {
-    pub fn new(player: &Player, node: &Node, item: &Item) -> Self {
+    pub fn new(player: &Player, node: &Node, item: &Item, base_chance: Option<Frac>) -> Self {
         Self {
             player: player.clone(),
             item: item.clone(),
-            gp: player.max_gp,
+            gp: player.gp,
+            base_chance: base_chance.unwrap_or(Frac::from(1u64)),
             success_chance: item.success_chance,
             eureka_hits: 0,
             depends_on_eureka_hits: 0,
@@ -192,7 +196,8 @@ impl GatherState {
                 };
                 // This is the chance the gather happens at all (if wise to the world was used,
                 // this gather is in limbo)
-                let mut base_gather_chance = if self.wise_to_the_world {
+                let mut base_gather_chance = self.base_chance;
+                base_gather_chance *= if self.wise_to_the_world {
                     success_chance / 2
                 } else {
                     success_chance
@@ -237,13 +242,14 @@ impl GatherState {
                 } else {
                     // Add gp from the whack
                     self.gp =
-                        (self.gp + u16::from(self.player.gp_per_gather())).min(self.player.max_gp);
+                        (self.gp + u16::from(self.player.gp_per_gather())).min(self.player.gp_max);
                     // Wise to the world doesn't count as an "attempt" but everything else does
                     self.remaining_attempts -= 1;
                 }
             }
         };
-        self.actions_so_far.push(ActionLog { action, depends_on });
+        self.actions_so_far
+            .push(ActionLog::Action { action, depends_on });
         Ok(())
     }
     /// rank=false for gift 0, rank=true for gift 1
@@ -429,7 +435,35 @@ pub struct Rotation {
     pub items: Frac,
     pub actions: Vec<ActionLog>,
 }
+impl Rotation {
+    pub fn add_revisit_line(&mut self) {
+        self.actions.push(ActionLog::Revisit);
+    }
+}
+impl AddAssign for Rotation {
+    fn add_assign(&mut self, other: Self) {
+        self.items += other.items;
+        self.actions.extend_from_slice(&other.actions);
+    }
+}
+impl Mul<Frac> for Rotation {
+    type Output = Self;
 
+    fn mul(self, rhs: Frac) -> Self {
+        let mut new = self.clone();
+        new.items *= rhs;
+        for mut action in &mut new.actions {
+            if let ActionLog::Action {
+                action: GatherAction::Gather { ref mut amount },
+                ..
+            } = action
+            {
+                *amount *= rhs;
+            }
+        }
+        new
+    }
+}
 impl Serialize for Rotation {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
@@ -449,9 +483,12 @@ impl Serialize for Rotation {
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Serialize)]
-pub struct ActionLog {
-    action: GatherAction,
-    depends_on: u8,
+pub enum ActionLog {
+    Action {
+        action: GatherAction,
+        depends_on: u8,
+    },
+    Revisit,
 }
 #[derive(Clone, Copy, Debug, PartialEq)]
 enum GatherAction {
@@ -742,9 +779,17 @@ lazy_static! {
 }
 impl fmt::Display for ActionLog {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.action)?;
-        if self.depends_on != 0 {
-            write!(f, " (depends on {} Eureka Moments)", self.depends_on)?;
+        match self {
+            ActionLog::Action {
+                ref action,
+                ref depends_on,
+            } => {
+                write!(f, "{}", action)?;
+                if *depends_on != 0 {
+                    write!(f, " (depends on {} Eureka Moments)", depends_on)?;
+                }
+            }
+            ActionLog::Revisit => f.write_str("Revisit")?,
         }
         Ok(())
     }

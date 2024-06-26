@@ -55,7 +55,7 @@ impl State {
             player: player.clone(),
             item: item.clone(),
             node: node.clone(),
-            gp: player.max_gp,
+            gp: player.gp_max,
             remaining_attempts: node.max_attempts,
             collectibility: 0,
             scrutiny_bonus: None,

@@ -22,7 +22,9 @@ onmessage = (e: MessageEvent) => {
   let result = nophicas_tidings.generate_rotation(
     data.player_level,
     data.player_gp,
+    data.player_gp_max,
     data.node_durability,
+    data.node_revisit_chance,
     data.item_success_chance,
     data.item_gather_amount,
     data.item_boon_chance,

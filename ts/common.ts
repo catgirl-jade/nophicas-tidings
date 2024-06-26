@@ -11,7 +11,9 @@
 export interface WorkerData {
   player_level: number
   player_gp: number
+  player_gp_max: number
   node_durability: number
+  node_revisit_chance: number
   item_success_chance: number
   item_gather_amount: number
   item_boon_chance: number

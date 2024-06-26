@@ -29,8 +29,10 @@ pub fn start() -> Result<(), JsValue> {
 #[wasm_bindgen]
 pub fn generate_rotation(
     level: u8,
-    max_gp: u16,
+    gp_current: u16,
+    gp_max: u16,
     node_durability: u8,
+    node_revisit_chance: u8,
     item_success_chance: u8,
     item_gather_amount: u8,
     boon_chance: u8,
@@ -41,7 +43,8 @@ pub fn generate_rotation(
         level,
         gathering: 0,
         perception: 0,
-        max_gp,
+        gp: gp_current,
+        gp_max,
     };
     // Initialize node settings
     let node = Node {
@@ -55,8 +58,23 @@ pub fn generate_rotation(
         boon_amount: 1,
         bountiful_bonus,
     };
-    let state = player.gather(&node, &params);
-    let rotation = state.best_rotation();
+    let state = player.gather(&node, &params, None);
+    let mut rotation = state.best_rotation();
+    let revisit_chance = Frac::new(node_revisit_chance, 100u8);
+    if level >= 91 {
+        // Avoid recalculating if max gp {
+        let rotation_revisit = if gp_current == gp_max {
+            rotation.clone() * revisit_chance
+        } else {
+            // Create a new state with a new base chance
+            let state_revisit = player.gather(&node, &params, Some(revisit_chance));
+            state_revisit.best_rotation()
+        };
+        // Add a special "revisit" action
+        rotation.add_revisit_line();
+        // Append the revisit rotation to the regular one
+        rotation += rotation_revisit;
+    }
     let out = serde_wasm_bindgen::to_value(&rotation)?;
     Ok(out)
 }

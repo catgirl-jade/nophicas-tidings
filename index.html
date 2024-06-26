@@ -34,7 +34,7 @@
             id="player_level"
             type="number"
             value=90
-            min=1 max=90
+            min=1 max=100
             size=3
             title="Your character's MIN/BTN level"
           />
@@ -46,7 +46,17 @@
             value=900
             min=0
             size=4
-            title="Your maximum GP, or how much GP you have going into the node"
+            title="How much GP you have going into the node"
+          />
+          <span class="input-group-text">/</span> 
+          <input
+            class="form-control"
+            id="player_gp_max"
+            type="number"
+            value=900
+            min=0
+            size=4
+            title="Your maximum GP"
           />
         </div>
         <div class="input-group mb-3">
@@ -93,10 +103,27 @@
             min=0
             max=10
             size=1
+            disabled
             title="Number of items granted by Gatherer's Boon. As far as I know this is always 1 but they could change it."
             aria-describedby="span_boon_items_suffix"
           />
           <span class="input-group-text" id="span_boon_items_suffix">items</span>
+        </div>
+        <div class="input-group mb-3">
+          <div class="form-floating" id="div_revisit">
+            <input
+              class="form-control"
+              id="node_revisit_chance"
+              type="number"
+              value=50
+              min=0
+              max=100
+              size=3
+              title="Chance of triggering Revisit"
+            />
+            <label for="node_revisit_chance">Revisit chance</label>
+          </div>
+          <span class="input-group-text" id="span_revisit_chance_suffix">%</span>
         </div>
         <h4>Item</h4>
         <div class="input-group mb-3">
@@ -202,7 +229,7 @@
               size=3
               title="Extra Chance of triggering Gatherer's Boon"
             />
-            <label for="item_boon_chance">Node bonus</label>
+            <label for="item_boon_chance_bonus">Node bonus</label>
           </div>
           <span class="input-group-text">=</span>
           <div class="form-floating">

@@ -41,6 +41,24 @@ div.action-row > div.action-name {
   text-align: left;
 }
 
+div.action-revisit {
+  background-color: #888888;
+}
+
+div.action-revisit > div.action-quantity {
+  text-align: center;
+}
+div.action-revisit > div.action-icons {
+  text-align: left;
+}
+div.action-revisit > div.action-icons > img {
+  width: 32px;
+  height: 32px;
+}
+div.action-revisit > div.action-name {
+  text-align: left;
+}
+
 div.search-row:hover {
   outline-style: solid;
   outline-color: #00FF0088;

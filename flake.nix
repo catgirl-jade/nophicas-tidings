@@ -39,7 +39,7 @@
           inherit buildInputs;
           nativeBuildInputs = nativeBuildInputs ++ [
             (rust_toolchain.default.override {
-              extensions = [ "rust-src" "rustfmt" "rls" "clippy" ];
+              extensions = [ "rust-src" "rustfmt" "rust-analyzer" "clippy" ];
               targets = rust_targets;
             })
           ];

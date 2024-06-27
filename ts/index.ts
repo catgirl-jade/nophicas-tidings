@@ -219,12 +219,36 @@ async function display_result(result: any) {
       // Create a row signifying a revisit
       let div_revisit_row = document.createElement("div");
       div_revisit_row.classList.add("row");
-      div_revisit_row.classList.add("action-row");
-      // Add message
-      let div_revisit_message = document.createElement("div");
-      div_revisit_message.classList.add("align-items-center");
-      div_revisit_message.innerText = "Revisit";
-      div_revisit_row.appendChild(div_revisit_message);
+      div_revisit_row.classList.add("action-revisit");
+      // The number of items gathered
+      const div_0  = document.createElement("div");
+      div_0.classList.add("col-sm-1");
+      div_0.classList.add("align-items-center");
+      div_0.classList.add("action-quantity");
+      // The number of items gathered (cumulative)
+      const div_1 = document.createElement("div");
+      div_1.classList.add("col-sm-1");
+      div_1.classList.add("align-items-center");
+      div_1.classList.add("action-quantity");
+      div_revisit_row.appendChild(div_0);
+      div_revisit_row.appendChild(div_1);
+      // The icons for the ability
+      const div_icons = document.createElement("div");
+      div_icons.classList.add("col-sm-auto");
+      div_icons.classList.add("action-icons");
+      const img_min = document.createElement("img");
+      div_icons.appendChild(img_min);
+      img_min.src = "https://xivapi.com/i/005000/005446.png";
+      const img_btn= document.createElement("img");
+      img_btn.src = "https://xivapi.com/i/005000/005471.png";
+      div_icons.appendChild(img_btn);
+      div_revisit_row.appendChild(div_icons);
+      // The name of the ability
+      const div_name = document.createElement("div");
+      div_name.classList.add("col");
+      div_name.classList.add("action_name");
+      div_name.innerText = "Revisit";
+      div_revisit_row.appendChild(div_name);
       // Append the revisit
       div_result.appendChild(div_revisit_row);
     }
@@ -324,6 +348,9 @@ async function start_calculations() {
   div_result_items_outer.style.display = "none";
   // Remove all action rows from the results
   div_result.querySelectorAll("div.action-row").forEach(row => {
+    row.parentNode!.removeChild(row)
+  });
+  div_result.querySelectorAll("div.action-revisit").forEach(row => {
     row.parentNode!.removeChild(row)
   });
   // Turn on the calculating message

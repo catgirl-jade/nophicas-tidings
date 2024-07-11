@@ -3,8 +3,8 @@
     "outDir": "./built",
     "allowJs": true,
     "target": "es2020",
-    "module": "ESNext",
-    "moduleResolution": "nodenext",
+    "module": "esnext",
+    "moduleResolution": "node",
     "strict": true,
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true

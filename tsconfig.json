@@ -3,10 +3,11 @@
     "outDir": "./built",
     "allowJs": true,
     "target": "es2020",
-    "module": "es2022",
+    "module": "ESNext",
     "moduleResolution": "nodenext",
     "strict": true,
-    "allowSyntheticDefaultImports": true
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true
   },
   "include": ["./ts/*.ts"]
 }

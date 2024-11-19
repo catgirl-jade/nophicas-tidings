@@ -1,5 +1,5 @@
 /// API URL for xivapi
-const XIVAPI_BASE: string = "https://xivapi.com";
+const XIVAPI_BASE: string = "https://beta.xivapi.com/api/1";
 
 /// Quick helper function to reduce duplication
 export function make_icon_key(id: number): string {
@@ -8,24 +8,18 @@ export function make_icon_key(id: number): string {
 
 /// Checks local cache for image urls before hitting XIVAPI
 export async function find_icons(ids: Iterable<number>) {
-  let unknown_ids = new Array<number>();
-  for (let id of ids) {
-    let key = make_icon_key(id); 
-    let path = localStorage.getItem(key);
-    if (!path) {
-      unknown_ids.push(id);
-    }
-  }
-  let id_string = unknown_ids.map((id) => id.toString()).join(",");
-  if (unknown_ids.length > 0) {
-    // Batch all the unknown ids into a single request
-    let resp = await fetch(`${XIVAPI_BASE}/action?` + new URLSearchParams({ids: id_string}));
-    let body = await resp.json();
-    // Cache all the newly requested ids
-    for (let result of body.Results) {
-      let key = make_icon_key(result.ID);
-      localStorage.setItem(key ,result.Icon);
-    }
+  // Batch all the unknown ids into a single request
+  let icon_responses = await Promise.all(
+    [...ids].map(async (id) => (await (await fetch(`${XIVAPI_BASE}/sheet/Action/${id}?` + new URLSearchParams({fields: "Icon"}))).json()))
+  );
+  // Cache all the newly requested ids
+  for (let response of icon_responses) {
+    let icon_url = `${XIVAPI_BASE}/asset?` + new URLSearchParams({
+      path: response.fields.Icon.path_hr1,
+      format: "png",
+    });
+    let key = make_icon_key(response.row_id);
+    localStorage.setItem(key, icon_url);
   }
 }
 export function get_icon_url(id: number) {
@@ -33,7 +27,7 @@ export function get_icon_url(id: number) {
   if (key) {
     let path = localStorage.getItem(key);
     if (path) {
-      return `${XIVAPI_BASE}${path}`;
+      return path;
     }
   }
   return null;
@@ -58,11 +52,11 @@ export async function get_item_base_scores(gathering_level: number): Promise<Bas
   }
   else {
     // Request info from xivapi 
-    let resp = await fetch(`${XIVAPI_BASE}/ItemLevel/${gathering_level}`);
+    let resp = await fetch(`${XIVAPI_BASE}/sheet/ItemLevel/${gathering_level}`);
     let body = await resp.json();
     // Extract values
-    gathering = body.Gathering;
-    perception = body.Perception;
+    gathering = body.fields.Gathering;
+    perception = body.fields.Perception;
     // Cache them
     let entry = `${gathering}/${perception}`;
     localStorage.setItem(key, entry);
@@ -75,80 +69,63 @@ export interface GatherableItem {
   gathering_level: number,
   icon: string
 }
+// Individual search result
 export interface SearchResult {
+  score: number,
+  sheet: string,
+  row_id: number,
+  fields: SearchResultFields, 
+}
+// Fields for the search result
+export interface SearchResultFields {
+  Item: SearchResultFieldItem,
+}
+export interface SearchResultFieldItem  {
+  value: number,
+  sheet: string,
+  row_id: number,
+  fields: SearchResultFieldItemFields,
+}
+export interface SearchResultFieldItemFields {
   Name: string,
-  GameContentLinks: SearchResultGameContentLinks,
-  Icon: string,
+  Icon: SearchResultFieldIcon,
+  IsCollectable: boolean,
+  LevelItem: SearchResultFieldLevelItem,
 }
-export interface SearchResultGameContentLinks {
-  GatheringItem: GameContentLinksGatheringItem
+// Icon field
+export interface SearchResultFieldIcon {
+  id: number,
+  path: string,
+  path_hr1: string,
 }
-export interface GameContentLinksGatheringItem {
-  Item: Array<number>
+// LevelItem field
+export interface SearchResultFieldLevelItem {
+  value: number,
+  sheet: string,
+  row_id: number,
+  fields: SearchResultFieldLevelItemFields,
+}
+// Subfields of LevelItem
+export interface SearchResultFieldLevelItemFields {
+  Gathering: number,
+  Perception: number
 }
 
 /// Searches for gatherable items
 export async function search_gatherable(query: string): Promise<Array<GatherableItem>> {
-  let resp = await fetch("https://xivapi.com/search", {
-      "method": "POST",
-      "body":
-      JSON.stringify({
-        indexes: "Item,GatheringItem",
-        columns: "Name,Icon,GameContentLinks.GatheringItem",
-        body: {
-          query: {
-            bool: {
-              must: [
-                {
-                  wildcard: {
-                    NameCombined_en: `*${query}*`
-                  }
-                }
-              ],
-              filter: [
-                {
-                  exists: {
-                    field: "GameContentLinks.GatheringItem"
-                  }
-                },
-                {
-                  term: {
-                    IsCollectable: 0 
-                  }
-                }
-              ]
-            }
-          },
-          from: 0,
-          size: 100
-        }
-      })
-  });
+  let resp = await fetch(`${XIVAPI_BASE}/search?` + new URLSearchParams({
+    query: `Item.Name~"${query}"`,
+    sheets: "GatheringItem",
+    fields: "Item.Name,Item.LevelItem.Gathering,Item.LevelItem.Perception,Item.Icon,Item.IsCollectable",
+  }));
   let body = await resp.json();
-  return await Promise.all(body.Results.map(async (result: SearchResult) => <GatherableItem>({
-    name: result.Name,
-    gathering_level: await get_item_gathering_level(result.GameContentLinks.GatheringItem.Item[0]),
-    icon: `${XIVAPI_BASE}${result.Icon}`
+  console.log(body);
+  return await Promise.all(body.results.filter((result: SearchResult) => !result.fields.Item.fields.IsCollectable).map(async (result: SearchResult) => <GatherableItem>({
+    name: result.fields.Item.fields.Name,
+    gathering_level: result.fields.Item.fields.LevelItem.value, 
+    icon: `${XIVAPI_BASE}/asset?` + new URLSearchParams({
+      path: result.fields.Item.fields.Icon.path_hr1,
+      format: "png",
+    }),
   })));
-}
-
-export async function get_item_gathering_level(gathering_item_id: number): Promise<number> {
-  let key = `glvl_for/${gathering_item_id}`;
-  let cached = localStorage.getItem(key);
-  let glvl = null;
-  if (cached) {
-    cached = cached!;
-    glvl = parseInt(cached);
-  }
-  else {
-    // Request info from xivapi 
-    let resp = await fetch(`${XIVAPI_BASE}/GatheringItem/${gathering_item_id}`);
-    let body = await resp.json();
-    // Extract values
-    glvl = body.GatheringItemLevelTargetID;
-    // Cache them
-    let entry = `${glvl}`;
-    localStorage.setItem(key, entry);
-  }
-  return glvl; 
 }

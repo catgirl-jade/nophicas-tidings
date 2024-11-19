@@ -73,7 +73,7 @@ module.exports = {
             loader: 'sass-loader'
           }
         ]
-      }
+      },
     ],
   },
   resolve: {
@@ -87,6 +87,10 @@ module.exports = {
   devServer: {
     watchFiles: ["index.html"],
     hot: true,
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, PATCH, OPTIONS",
+    },
   }, 
    
   plugins: [

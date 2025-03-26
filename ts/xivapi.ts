@@ -40,27 +40,12 @@ export interface BaseScores {
 
 /// Requests gathering and perception stats for a given item level
 export async function get_item_base_scores(gathering_level: number): Promise<BaseScores> {
-  let key = `glvl/${gathering_level}`;
-  let cached = localStorage.getItem(key);
-  let gathering = null;
-  let perception = null;
-  if (cached) {
-    cached = cached!;
-    let data = cached.split("/");
-    gathering = parseInt(data[0]);
-    perception = parseInt(data[1]);
-  }
-  else {
-    // Request info from xivapi 
-    let resp = await fetch(`${XIVAPI_BASE}/sheet/ItemLevel/${gathering_level}`);
-    let body = await resp.json();
-    // Extract values
-    gathering = body.fields.Gathering;
-    perception = body.fields.Perception;
-    // Cache them
-    let entry = `${gathering}/${perception}`;
-    localStorage.setItem(key, entry);
-  }
+  // Request info from xivapi 
+  let resp = await fetch(`${XIVAPI_BASE}/sheet/ItemLevel/${gathering_level}`);
+  let body = await resp.json();
+  // Extract values
+  let gathering = body.fields.Gathering;
+  let perception = body.fields.Perception;
   return { gathering, perception };
 }
 

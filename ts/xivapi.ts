@@ -1,5 +1,5 @@
 /// API URL for xivapi
-const XIVAPI_BASE: string = "https://beta.xivapi.com/api/1";
+const XIVAPI_BASE: string = "https://v2.xivapi.com/api";
 
 /// Quick helper function to reduce duplication
 export function make_icon_key(id: number): string {
@@ -79,6 +79,7 @@ export interface SearchResult {
 // Fields for the search result
 export interface SearchResultFields {
   Item: SearchResultFieldItem,
+  GatheringItemLevel: SearchResultFieldGatheringItemLevel
 }
 export interface SearchResultFieldItem  {
   value: number,
@@ -90,7 +91,7 @@ export interface SearchResultFieldItemFields {
   Name: string,
   Icon: SearchResultFieldIcon,
   IsCollectable: boolean,
-  LevelItem: SearchResultFieldLevelItem,
+  ItemLevel: SearchResultFieldItemLevel,
 }
 // Icon field
 export interface SearchResultFieldIcon {
@@ -98,17 +99,28 @@ export interface SearchResultFieldIcon {
   path: string,
   path_hr1: string,
 }
-// LevelItem field
-export interface SearchResultFieldLevelItem {
+// ItemLevel field
+export interface SearchResultFieldItemLevel {
   value: number,
   sheet: string,
   row_id: number,
-  fields: SearchResultFieldLevelItemFields,
+  fields: SearchResultFieldItemLevelFields,
 }
-// Subfields of LevelItem
-export interface SearchResultFieldLevelItemFields {
+// Subfields of ItemLevel
+export interface SearchResultFieldItemLevelFields {
   Gathering: number,
   Perception: number
+}
+
+export interface SearchResultFieldGatheringItemLevel {
+  value: number,
+  sheet: string,
+  row_id: number,
+  fields: GatheringItemLevelFields
+}
+export interface GatheringItemLevelFields {
+  GatheringItemLevel: number,
+  Stars: number
 }
 
 /// Searches for gatherable items
@@ -116,13 +128,13 @@ export async function search_gatherable(query: string): Promise<Array<Gatherable
   let resp = await fetch(`${XIVAPI_BASE}/search?` + new URLSearchParams({
     query: `Item.Name~"${query}"`,
     sheets: "GatheringItem",
-    fields: "Item.Name,Item.LevelItem.Gathering,Item.LevelItem.Perception,Item.Icon,Item.IsCollectable",
+    fields: "Item.Name,Item.ItemLevel.Gathering,Item.ItemLevel.Perception,Item.Icon,Item.IsCollectable,GatheringItemLevel",
   }));
   let body = await resp.json();
   console.log(body);
   return await Promise.all(body.results.filter((result: SearchResult) => !result.fields.Item.fields.IsCollectable).map(async (result: SearchResult) => <GatherableItem>({
     name: result.fields.Item.fields.Name,
-    gathering_level: result.fields.Item.fields.LevelItem.value, 
+    gathering_level: result.fields.GatheringItemLevel.row_id,
     icon: `${XIVAPI_BASE}/asset?` + new URLSearchParams({
       path: result.fields.Item.fields.Icon.path_hr1,
       format: "png",

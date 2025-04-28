@@ -309,7 +309,10 @@ impl GatherState {
         } else {
             if self.item.boon_chance == Frac::from(1) {
                 Err(GatherError::BoonAlreadyMax)
-            } else {
+            } else if self.item.boon_chance + chance > Frac::from(1) + GiftRank::I.boon_chance_bonus() {
+                Err(GatherError::BoonUsedTooMuch)
+            }
+            else {
                 self.item.boon_chance = self.item.boon_chance + chance;
                 if self.item.boon_chance > Frac::from(1) {
                     self.item.boon_chance = Frac::from(1);
@@ -812,6 +815,8 @@ enum GatherError {
     BoonChanceZero,
     #[error("Gift does nothing if boon is already max")]
     BoonAlreadyMax,
+    #[error("An earlier gift 1 is redundant")]
+    BoonUsedTooMuch,
     #[error("SolidReason/AgelessWords wasted")]
     DurabilityOvercapped,
     #[error("Sharp Vision/Field Mastery used at 100% or when a lower rank would have sufficed")]

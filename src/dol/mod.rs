@@ -218,14 +218,16 @@ impl GatherState {
                 amount_gathered += base_gather_chance
                     * self.bountiful_chance
                     * u128::from(self.item.bountiful_bonus);
-                // If gather occurs again, we can guarantee the bonus gets applied in full
-                // Thus, we set the bountiful chance to be 1/2, so the next gather can
-                // claim the other half
-                if self.wise_to_the_world && self.bountiful_chance != Frac::from(0) {
-                    self.bountiful_chance = Frac::new(1u64, 2u64);
+                // Bountiful is consumed only when the gather actually succeeds.
+                // A WTTW gather succeeds with 50% probability (success_chance/2 with
+                // success_chance == 1), so the bountiful buff persists into the next
+                // gather with the remaining 50% probability. Multiply rather than
+                // reset, so chained WTTW gathers decay it correctly (1 → 1/2 → 1/4 …)
+                // instead of double-counting the bonus.
+                if self.wise_to_the_world {
+                    self.bountiful_chance *= Frac::new(1u64, 2u64);
                 } else {
-                    // If this was not a wise to the world iteration, we always claim the bonus
-                    // completely
+                    // A non-WTTW gather (success_chance == 1) always consumes bountiful
                     self.bountiful_chance = Frac::from(0);
                 }
                 // Gatherers boon
@@ -833,4 +835,63 @@ enum GatherError {
 fn frac_to_string(f: Frac) -> String {
     fraction::division::divide_to_string(*f.numer().unwrap(), *f.denom().unwrap(), 8, false)
         .unwrap()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::player::Player;
+
+    fn gather() -> GatherAction {
+        GatherAction::Gather {
+            amount: Frac::from(0u64),
+        }
+    }
+
+    // Regression test: chained Wise-to-the-World gathers used to over-count the
+    // Bountiful bonus because bountiful_chance was reset to 1/2 after every WTTW
+    // gather instead of multiplied by 1/2. The buggy total for this rotation
+    // was 55.6; the correct total is 55.1.
+    #[test]
+    fn double_wttw_does_not_double_count_bountiful() {
+        let player = Player {
+            level: 100,
+            gathering: 5425,
+            perception: 5173,
+            gp: 988,
+            gp_max: 988,
+        };
+        let node = Node { max_attempts: 6 };
+        let item = Item {
+            success_chance: Frac::from(1u64),
+            items_per_gather: 4,
+            boon_chance: Frac::new(65u64, 100u64),
+            boon_amount: 1,
+            bountiful_bonus: 2,
+        };
+        let mut state = GatherState::new(&player, &node, &item, None);
+        let actions = [
+            GatherAction::Gift(GiftRank::II),
+            GatherAction::Tidings,
+            gather(),
+            gather(),
+            gather(),
+            gather(),
+            gather(),
+            GatherAction::Bountiful,
+            GatherAction::SolidReasonAgelessWords,
+            GatherAction::WiseToTheWorld,
+            gather(),
+            GatherAction::SolidReasonAgelessWords,
+            GatherAction::WiseToTheWorld,
+            gather(),
+            gather(),
+            gather(),
+            gather(),
+        ];
+        for action in actions {
+            state.action(action).expect("action should succeed");
+        }
+        assert_eq!(state.amount_gathered, Frac::new(551u64, 10u64));
+    }
 }
